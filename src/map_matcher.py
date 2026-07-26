@@ -5,13 +5,13 @@ import urllib.parse
 import json
 
 class OSRMMapMatcher:
-    def __init__(self, base_url: str = "http://localhost:5000", profile: str = "driving", max_points: int = 500):
+    def __init__(self, base_url: str = "http://localhost:5000", profile: str = "bus", max_points: int = 500):
         """
         Initializes the MapMatcher.
         
         Args:
             base_url: The base URL of the OSRM instance.
-            profile: The routing profile (e.g., 'driving', 'bus').
+            profile: The routing profile (e.g., 'bus', 'driving').
             max_points: The maximum number of coordinates allowed per request.
         """
         self.base_url = base_url.rstrip('/')

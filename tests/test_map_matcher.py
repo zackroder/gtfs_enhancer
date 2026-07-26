@@ -45,7 +45,7 @@ def test_match_shape_success(mock_get, sample_shape_df):
     call_args = mock_get.call_args
     url = call_args[0][0]
     
-    assert url.startswith("http://localhost:5000/match/v1/driving/-122.41940,37.77490;-122.41900,37.77500;-122.41800,37.77550")
+    assert url.startswith("http://localhost:5000/match/v1/bus/-122.41940,37.77490;-122.41900,37.77500;-122.41800,37.77550")
     
     kwargs = call_args[1]
     assert "params" in kwargs

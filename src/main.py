@@ -89,7 +89,7 @@ def main():
     parser.add_argument("gtfs_path", help="Path to GTFS zip file, directory, or HTTP(S) URL")
     parser.add_argument("output_path", help="Path to save the output GeoJSON")
     parser.add_argument("--osrm-url", default="http://localhost:5000", help="Base URL of local OSRM instance (default: http://localhost:5000)")
-    parser.add_argument("--profile", default="driving", help="OSRM routing profile to use (default: driving)")
+    parser.add_argument("--profile", default="bus", help="OSRM routing profile to use (default: bus)")
     parser.add_argument("--max-points", type=int, default=500, help="Maximum trace points per OSRM request before downsampling (default: 500)")
     parser.add_argument("--routes", type=str, default=None, help="Comma-separated list of route IDs or names to process (debug mode)")
     parser.add_argument("--limit-shapes", type=int, default=None, help="Limit processing to the first N shapes (debug mode)")
