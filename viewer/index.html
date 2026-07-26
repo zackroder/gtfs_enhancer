@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GTFS Enhancer | Shape Viewer</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app-container">
+        <!-- Sidebar / Control Panel -->
+        <aside class="glass-panel">
+            <header>
+                <div class="logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#00f2fe" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M2 17L12 22L22 17" stroke="#4facfe" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M2 12L12 17L22 12" stroke="#4facfe" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <h1>GTFS Enhancer</h1>
+                </div>
+                <p class="subtitle">Shape Validation Viewer</p>
+            </header>
+
+            <div class="control-group file-upload-group">
+                <label for="geojson-upload" class="upload-btn">
+                    <span>Select GeoJSON File</span>
+                    <input type="file" id="geojson-upload" accept=".geojson,.json" />
+                </label>
+                <p class="help-text">Load the output from main.py</p>
+            </div>
+
+            <div class="control-group filter-group">
+                <h3>Layer Controls</h3>
+                
+                <label class="toggle-switch">
+                    <input type="checkbox" id="toggle-original" checked>
+                    <span class="slider"></span>
+                    <span class="label-text">
+                        <span class="color-dot original-dot"></span>
+                        Original Shapes
+                    </span>
+                </label>
+                
+                <label class="toggle-switch">
+                    <input type="checkbox" id="toggle-cleaned" checked>
+                    <span class="slider"></span>
+                    <span class="label-text">
+                        <span class="color-dot cleaned-dot"></span>
+                        Cleaned (Map Matched)
+                    </span>
+                </label>
+            </div>
+
+            <div class="stats-panel" id="stats-panel">
+                <div class="stat-box">
+                    <span class="stat-value" id="stat-total-shapes">-</span>
+                    <span class="stat-label">Total Shapes</span>
+                </div>
+            </div>
+            
+        </aside>
+
+        <!-- Map Container -->
+        <main>
+            <div id="map"></div>
+        </main>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <!-- Custom JS -->
+    <script src="app.js"></script>
+</body>
+</html>
