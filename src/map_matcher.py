@@ -60,10 +60,12 @@ class OSRMMapMatcher:
         # Parameters
         # geometries=geojson makes it easier to parse into Shapely objects
         # radiuses gives some leeway for the GPS points
+        # gaps=ignore prevents OSRM from dropping segments when encountering minor gaps
         params = {
             "geometries": "geojson",
             "overview": "full",
             "radiuses": ";".join(["25"] * len(coords)), # 25 meters leeway per point
+            "gaps": "ignore",
             "annotations": "false"
         }
         
@@ -79,10 +81,22 @@ class OSRMMapMatcher:
             print(f"OSRM Map Matching failed or returned no matchings: {data.get('code')}")
             return None
             
-        # Find the matching with the highest confidence, or just take the first one
-        best_match = max(data["matchings"], key=lambda m: m.get("confidence", 0))
-        
-        # Parse geojson into Shapely LineString
-        matched_geom = shape(best_match["geometry"])
-        
-        return matched_geom
+        # OSRM can return multiple matching segments if there are gaps.
+        # Stitch all matching geometries together so long routes are not cut off.
+        all_coords = []
+        for match in data["matchings"]:
+            sub_geom = shape(match["geometry"])
+            if isinstance(sub_geom, LineString):
+                sub_coords = list(sub_geom.coords)
+                if not all_coords:
+                    all_coords.extend(sub_coords)
+                else:
+                    if all_coords[-1] == sub_coords[0]:
+                        all_coords.extend(sub_coords[1:])
+                    else:
+                        all_coords.extend(sub_coords)
+                        
+        if len(all_coords) < 2:
+            return None
+            
+        return LineString(all_coords)

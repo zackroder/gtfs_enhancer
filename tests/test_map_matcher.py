@@ -90,3 +90,33 @@ def test_match_shape_downsamples(mock_get):
     
     # It should have downsampled to <= 3 points
     assert num_points <= 3
+
+@patch('src.map_matcher.requests.get')
+def test_match_shape_stitches_multiple_matchings(mock_get, sample_shape_df):
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    # Simulate OSRM returning 2 separate matching segments due to a gap
+    mock_response.json.return_value = {
+        "code": "Ok",
+        "matchings": [
+            {
+                "geometry": {
+                    "type": "LineString",
+                    "coordinates": [[0.0, 0.0], [0.0, 0.5]]
+                }
+            },
+            {
+                "geometry": {
+                    "type": "LineString",
+                    "coordinates": [[0.0, 0.5], [0.0, 1.0]]
+                }
+            }
+        ]
+    }
+    mock_get.return_value = mock_response
+    
+    matcher = OSRMMapMatcher()
+    geom = matcher.match_shape(sample_shape_df)
+    
+    # Verify that the two segments were stitched together into a 3-point LineString [(0,0), (0,0.5), (0,1)]
+    assert list(geom.coords) == [(0.0, 0.0), (0.0, 0.5), (0.0, 1.0)]
