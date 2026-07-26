@@ -44,17 +44,20 @@ def setup_logging(log_file: str = "execution_debug.log"):
     
     return logger
 
-def _process_single_shape(shape_id: str, df, matcher: OSRMMapMatcher, cleaner: ShapeCleaner, logger: logging.Logger, max_stub_meters: float = 40.0):
+def _process_single_shape(shape_id: str, df, matcher: OSRMMapMatcher, cleaner: ShapeCleaner, logger: logging.Logger, max_stub_meters: float = 40.0, enable_stub_filter: bool = False):
     thread_name = current_thread().name
     logger.debug(f"Starting processing for shape {shape_id} with {len(df)} points on thread {thread_name}")
     
     results = []
     try:
-        # 0. Pre-matching perpendicular stub filter
-        pre_filtered_df = cleaner.filter_perpendicular_stubs(df, max_stub_meters=max_stub_meters)
-        removed_stubs_count = len(df) - len(pre_filtered_df)
-        if removed_stubs_count > 0:
-            logger.info(f"Pre-matching filter removed {removed_stubs_count} side-stub point(s) from shape_id={shape_id}")
+        # 0. Pre-matching perpendicular stub filter (Optional, disabled by default)
+        if enable_stub_filter:
+            pre_filtered_df = cleaner.filter_perpendicular_stubs(df, max_stub_meters=max_stub_meters)
+            removed_stubs_count = len(df) - len(pre_filtered_df)
+            if removed_stubs_count > 0:
+                logger.info(f"Pre-matching filter removed {removed_stubs_count} side-stub point(s) from shape_id={shape_id}")
+        else:
+            pre_filtered_df = df
             
         # 1. Map Match
         matched_geom, details = matcher.match_shape(pre_filtered_df)
@@ -98,7 +101,7 @@ def _process_single_shape(shape_id: str, df, matcher: OSRMMapMatcher, cleaner: S
         logger.error(f"Race condition or failure on shape_id={shape_id} on thread {thread_name}: {type(e).__name__}: {e}", exc_info=True)
         return shape_id, [], str(e)
 
-def process_gtfs_shapes(gtfs_path: str, osrm_url: str, output_path: str, profile: str, max_points: int = 500, routes: list[str] = None, limit_shapes: int = None, workers: int = 4, log_file: str = "execution_debug.log", max_stub_meters: float = 75.0, snap_radius: float = 15.0, use_bearings: bool = True, bearing_range: int = 45):
+def process_gtfs_shapes(gtfs_path: str, osrm_url: str, output_path: str, profile: str, max_points: int = 500, routes: list[str] = None, limit_shapes: int = None, workers: int = 4, log_file: str = "execution_debug.log", max_stub_meters: float = 75.0, snap_radius: float = 15.0, use_bearings: bool = True, bearing_range: int = 45, enable_stub_filter: bool = False):
     logger = setup_logging(log_file)
     logger.info(f"Parsing shapes from {gtfs_path}...")
     
@@ -128,12 +131,12 @@ def process_gtfs_shapes(gtfs_path: str, osrm_url: str, output_path: str, profile
     all_results = []
     failed_shapes = []
     
-    logger.info(f"Starting map matching using {workers} parallel worker thread(s) (Snap Radius: {snap_radius}m | Bearings: {use_bearings} ±{bearing_range}°)...")
+    logger.info(f"Starting map matching using {workers} parallel worker thread(s) (Snap Radius: {snap_radius}m | Bearings: {use_bearings} ±{bearing_range}° | Pre-filter: {enable_stub_filter})...")
     
     if workers > 1:
         with ThreadPoolExecutor(max_workers=workers) as executor:
             future_to_shape = {
-                executor.submit(_process_single_shape, shape_id, df, matcher, cleaner, logger, max_stub_meters): shape_id
+                executor.submit(_process_single_shape, shape_id, df, matcher, cleaner, logger, max_stub_meters, enable_stub_filter): shape_id
                 for shape_id, df in shapes.items()
             }
             
@@ -151,7 +154,7 @@ def process_gtfs_shapes(gtfs_path: str, osrm_url: str, output_path: str, profile
     else:
         # Sequential execution
         for shape_id, df in shapes.items():
-            s_id, res, err = _process_single_shape(shape_id, df, matcher, cleaner, logger, max_stub_meters)
+            s_id, res, err = _process_single_shape(shape_id, df, matcher, cleaner, logger, max_stub_meters, enable_stub_filter)
             if err:
                 failed_shapes.append((s_id, err))
             else:
@@ -190,6 +193,7 @@ def main():
     parser.add_argument("--snap-radius", type=float, default=15.0, help="OSRM search radius in meters for snapping points (default: 15.0)")
     parser.add_argument("--bearing-range", type=int, default=45, help="Allowed directional heading variance in degrees +/- (default: 45)")
     parser.add_argument("--no-bearings", action="store_true", help="Disable directional heading/bearing matching in OSRM")
+    parser.add_argument("--enable-stub-filter", action="store_true", help="Enable pre-matching side-stub filtering (disabled by default)")
     parser.add_argument("--max-stub-meters", type=float, default=75.0, help="Maximum distance in meters to classify a pre-matching side-stub (default: 75.0)")
     parser.add_argument("--routes", type=str, default=None, help="Comma-separated list of route IDs or names to process (debug mode)")
     parser.add_argument("--limit-shapes", type=int, default=None, help="Limit processing to the first N shapes (debug mode)")
@@ -217,7 +221,8 @@ def main():
         args.max_stub_meters,
         args.snap_radius,
         use_bearings=not args.no_bearings,
-        bearing_range=args.bearing_range
+        bearing_range=args.bearing_range,
+        enable_stub_filter=args.enable_stub_filter
     )
 
 if __name__ == "__main__":
