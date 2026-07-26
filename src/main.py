@@ -98,7 +98,7 @@ def _process_single_shape(shape_id: str, df, matcher: OSRMMapMatcher, cleaner: S
         logger.error(f"Race condition or failure on shape_id={shape_id} on thread {thread_name}: {type(e).__name__}: {e}", exc_info=True)
         return shape_id, [], str(e)
 
-def process_gtfs_shapes(gtfs_path: str, osrm_url: str, output_path: str, profile: str, max_points: int = 500, routes: list[str] = None, limit_shapes: int = None, workers: int = 4, log_file: str = "execution_debug.log", max_stub_meters: float = 75.0, snap_radius: float = 15.0):
+def process_gtfs_shapes(gtfs_path: str, osrm_url: str, output_path: str, profile: str, max_points: int = 500, routes: list[str] = None, limit_shapes: int = None, workers: int = 4, log_file: str = "execution_debug.log", max_stub_meters: float = 75.0, snap_radius: float = 15.0, use_bearings: bool = True, bearing_range: int = 45):
     logger = setup_logging(log_file)
     logger.info(f"Parsing shapes from {gtfs_path}...")
     
@@ -115,13 +115,20 @@ def process_gtfs_shapes(gtfs_path: str, osrm_url: str, output_path: str, profile
         shapes = {k: shapes[k] for k in shape_keys}
         logger.info(f"Debug Mode: Limited processing to first {len(shapes)} shapes.")
     
-    matcher = OSRMMapMatcher(base_url=osrm_url, profile=profile, max_points=max_points, snap_radius_meters=snap_radius)
+    matcher = OSRMMapMatcher(
+        base_url=osrm_url,
+        profile=profile,
+        max_points=max_points,
+        snap_radius_meters=snap_radius,
+        use_bearings=use_bearings,
+        bearing_range=bearing_range
+    )
     cleaner = ShapeCleaner()
     
     all_results = []
     failed_shapes = []
     
-    logger.info(f"Starting map matching using {workers} parallel worker thread(s) (Snap Radius: {snap_radius}m)...")
+    logger.info(f"Starting map matching using {workers} parallel worker thread(s) (Snap Radius: {snap_radius}m | Bearings: {use_bearings} ±{bearing_range}°)...")
     
     if workers > 1:
         with ThreadPoolExecutor(max_workers=workers) as executor:
@@ -181,6 +188,8 @@ def main():
     parser.add_argument("--profile", default="bus", help="OSRM routing profile to use (default: bus)")
     parser.add_argument("--max-points", type=int, default=500, help="Maximum trace points per OSRM request before downsampling (default: 500)")
     parser.add_argument("--snap-radius", type=float, default=15.0, help="OSRM search radius in meters for snapping points (default: 15.0)")
+    parser.add_argument("--bearing-range", type=int, default=45, help="Allowed directional heading variance in degrees +/- (default: 45)")
+    parser.add_argument("--no-bearings", action="store_true", help="Disable directional heading/bearing matching in OSRM")
     parser.add_argument("--max-stub-meters", type=float, default=75.0, help="Maximum distance in meters to classify a pre-matching side-stub (default: 75.0)")
     parser.add_argument("--routes", type=str, default=None, help="Comma-separated list of route IDs or names to process (debug mode)")
     parser.add_argument("--limit-shapes", type=int, default=None, help="Limit processing to the first N shapes (debug mode)")
@@ -206,7 +215,9 @@ def main():
         args.workers,
         args.log_file,
         args.max_stub_meters,
-        args.snap_radius
+        args.snap_radius,
+        use_bearings=not args.no_bearings,
+        bearing_range=args.bearing_range
     )
 
 if __name__ == "__main__":

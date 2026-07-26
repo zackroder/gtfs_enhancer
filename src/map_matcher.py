@@ -48,8 +48,42 @@ def _resample_max_gap(coords: list[tuple[float, float]], max_gap_meters: float =
         
     return resampled[:max_points]
 
+import math
+
+def _compute_bearings(coords: list[tuple[float, float]], bearing_range: int = 45) -> str:
+    """
+    Computes compass bearings (0-360 degrees) between consecutive (lon, lat) coordinates.
+    Returns an OSRM bearings parameter string: '{bearing},{range};{bearing},{range}...'
+    """
+    bearings = []
+    n = len(coords)
+    if n < 2:
+        return ";".join([f"0,{bearing_range}"] * n)
+        
+    for i in range(n):
+        if i < n - 1:
+            p1 = coords[i]
+            p2 = coords[i + 1]
+        else:
+            p1 = coords[i - 1]
+            p2 = coords[i]
+            
+        lon1, lat1 = math.radians(p1[0]), math.radians(p1[1])
+        lon2, lat2 = math.radians(p2[0]), math.radians(p2[1])
+        
+        dlon = lon2 - lon1
+        y = math.sin(dlon) * math.cos(lat2)
+        x = math.cos(lat1) * math.sin(lat2) - math.sin(lat1) * math.cos(lat2) * math.cos(dlon)
+        
+        bearing_rad = math.atan2(y, x)
+        bearing_deg = (math.degrees(bearing_rad) + 360.0) % 360.0
+        
+        bearings.append(f"{int(round(bearing_deg))},{bearing_range}")
+        
+    return ";".join(bearings)
+
 class OSRMMapMatcher:
-    def __init__(self, base_url: str = "http://localhost:5000", profile: str = "bus", max_points: int = 500, max_gap_meters: float = 300.0, snap_radius_meters: float = 15.0):
+    def __init__(self, base_url: str = "http://localhost:5000", profile: str = "bus", max_points: int = 500, max_gap_meters: float = 300.0, snap_radius_meters: float = 15.0, use_bearings: bool = True, bearing_range: int = 45):
         """
         Initializes the MapMatcher.
         
@@ -59,23 +93,27 @@ class OSRMMapMatcher:
             max_points: The maximum number of coordinates allowed per request.
             max_gap_meters: Maximum allowed distance in meters between consecutive points.
             snap_radius_meters: Search radius in meters for snapping GPS points to road network.
+            use_bearings: Whether to pass directional heading/bearing constraints to OSRM.
+            bearing_range: Allowed directional heading variance in degrees (+/- range).
         """
         self.base_url = base_url.rstrip('/')
         self.profile = profile
         self.max_points = max_points
         self.max_gap_meters = max_gap_meters
         self.snap_radius_meters = snap_radius_meters
+        self.use_bearings = use_bearings
+        self.bearing_range = bearing_range
 
-    def match_shape(self, shape_df: pd.DataFrame) -> LineString:
+    def match_shape(self, shape_df: pd.DataFrame) -> tuple[LineString, dict]:
         """
-        Takes a DataFrame containing GTFS shape points and returns a map-matched Shapely LineString.
+        Takes a DataFrame containing GTFS shape points and returns a map-matched Shapely LineString and details dict.
         
         Args:
             shape_df: DataFrame with at least 'shape_pt_lon' and 'shape_pt_lat' columns,
                       ordered by 'shape_pt_sequence'.
                       
         Returns:
-            A Shapely LineString representing the matched route, or None if matching failed.
+            A tuple of (Shapely LineString, details_dict), or (None, {}) if matching failed.
         """
         # Ensure it's sorted
         if 'shape_pt_sequence' in shape_df.columns:
@@ -114,10 +152,6 @@ class OSRMMapMatcher:
         url = f"{self.base_url}/match/v1/{self.profile}/{coords_str}"
         
         # Parameters
-        # geometries=geojson makes it easier to parse into Shapely objects
-        # radiuses gives search leeway in meters per point
-        # gaps=ignore prevents OSRM from dropping segments when encountering minor gaps
-        # annotations=nodes,distance provides detailed OSM node IDs for diagnostics
         radius_str = str(int(self.snap_radius_meters))
         params = {
             "geometries": "geojson",
@@ -126,6 +160,9 @@ class OSRMMapMatcher:
             "gaps": "ignore",
             "annotations": "nodes,distance"
         }
+        
+        if self.use_bearings:
+            params["bearings"] = _compute_bearings(coords, bearing_range=self.bearing_range)
         
         response = requests.get(url, params=params)
         

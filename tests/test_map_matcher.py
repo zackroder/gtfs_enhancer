@@ -113,3 +113,15 @@ def test_match_shape_stitches_multiple_matchings(mock_get, sample_shape_df):
     
     # Verify that the two segments were stitched together into a 3-point LineString [(0,0), (0,0.5), (0,1)]
     assert list(geom.coords) == [(0.0, 0.0), (0.0, 0.5), (0.0, 1.0)]
+
+def test_compute_bearings():
+    from src.map_matcher import _compute_bearings
+    # Northbound line: (0,0) -> (0, 1) -> heading ~0 deg
+    coords = [(0.0, 0.0), (0.0, 1.0)]
+    result = _compute_bearings(coords, bearing_range=45)
+    assert result == "0,45;0,45"
+    
+    # Eastbound line: (0,0) -> (1, 0) -> heading ~90 deg
+    coords_east = [(0.0, 0.0), (1.0, 0.0)]
+    result_east = _compute_bearings(coords_east, bearing_range=30)
+    assert result_east == "90,30;90,30"
