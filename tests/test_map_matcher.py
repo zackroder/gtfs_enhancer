@@ -53,3 +53,40 @@ def test_match_shape_success(mock_get, sample_shape_df):
     assert params.get("geometries") == "geojson"
     assert params.get("radiuses") == "25;25;25"
     # For now, just checking we parsed it. In reality we will decode polyline or use geojson
+
+@patch('src.map_matcher.requests.get')
+def test_match_shape_downsamples(mock_get):
+    # Setup mock response
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {
+        "code": "Ok",
+        "matchings": [{"geometry": {"type": "LineString", "coordinates": [[0,0], [1,1]]}, "confidence": 0.95}]
+    }
+    mock_get.return_value = mock_response
+
+    matcher = OSRMMapMatcher(base_url="http://localhost:5000", max_points=3)
+    
+    # Create a shape with 5 points (more than max_points=3)
+    # The intermediate points deviate by only 0.00001 from the y=0 line,
+    # which is smaller than the initial tolerance of 0.00005.
+    data = {
+        'shape_pt_lon': [0.0, 1.0, 2.0, 3.0, 4.0],
+        'shape_pt_lat': [0.0, 0.00001, 0.0, 0.00001, 0.0],
+        'shape_pt_sequence': [1, 2, 3, 4, 5]
+    }
+    df = pd.DataFrame(data)
+    
+    matcher.match_shape(df)
+    
+    assert mock_get.called
+    call_args = mock_get.call_args
+    url = call_args[0][0]
+    
+    # Check how many points are in the URL.
+    # The URL looks like: .../match/v1/driving/lon,lat;lon,lat...
+    coords_str = url.split('/')[-1]
+    num_points = len(coords_str.split(';'))
+    
+    # It should have downsampled to <= 3 points
+    assert num_points <= 3

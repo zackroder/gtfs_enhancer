@@ -20,6 +20,11 @@ const fileInput = document.getElementById('geojson-upload');
 const toggleOriginal = document.getElementById('toggle-original');
 const toggleCleaned = document.getElementById('toggle-cleaned');
 const statTotal = document.getElementById('stat-total-shapes');
+const routeSelector = document.getElementById('route-selector');
+
+// Global State
+let currentFeatures = [];
+let currentRouteMapping = {};
 
 // Handle File Upload
 fileInput.addEventListener('change', (e) => {
@@ -50,21 +55,57 @@ toggleCleaned.addEventListener('change', (e) => {
     else map.removeLayer(cleanedLayer);
 });
 
-function processGeoJSON(data) {
-    // Clear existing layers
-    originalLayer.clearLayers();
-    cleanedLayer.clearLayers();
+// Route Selector Handler
+routeSelector.addEventListener('change', (e) => {
+    const selectedRoute = e.target.value;
+    if (selectedRoute === 'all') {
+        renderFeatures(null);
+    } else {
+        const shapeIds = currentRouteMapping[selectedRoute] || [];
+        renderFeatures(shapeIds);
+    }
+});
 
+function processGeoJSON(data) {
     if (!data.features || data.features.length === 0) {
         alert("No features found in the GeoJSON.");
         return;
     }
 
+    currentFeatures = data.features;
+    currentRouteMapping = data.route_mapping || {};
+
+    // Populate Route Selector
+    routeSelector.innerHTML = '<option value="all">All Routes</option>';
+    const routeNames = Object.keys(currentRouteMapping).sort();
+    routeNames.forEach(route => {
+        const option = document.createElement('option');
+        option.value = route;
+        option.textContent = route;
+        routeSelector.appendChild(option);
+    });
+
+    // Render all initially
+    renderFeatures(null);
+}
+
+function renderFeatures(allowedShapeIds) {
+    // Clear existing layers
+    originalLayer.clearLayers();
+    cleanedLayer.clearLayers();
+
     let originalCount = 0;
     const bounds = L.latLngBounds();
 
-    data.features.forEach(feature => {
-        const status = feature.properties?.status || 'cleaned'; // Default to cleaned if missing
+    currentFeatures.forEach(feature => {
+        const shapeId = String(feature.properties?.shape_id);
+        
+        // Skip if we have a filter and this shape isn't in it
+        if (allowedShapeIds && !allowedShapeIds.includes(shapeId)) {
+            return;
+        }
+
+        const status = feature.properties?.status || 'cleaned';
         
         let style = {};
         let targetLayer = null;
@@ -74,7 +115,7 @@ function processGeoJSON(data) {
                 color: '#ef4444',
                 weight: 4,
                 opacity: 0.6,
-                dashArray: '5, 5' // Dashed line to differentiate when overlapping
+                dashArray: '5, 5'
             };
             targetLayer = originalLayer;
             originalCount++;
@@ -106,8 +147,8 @@ function processGeoJSON(data) {
         }
     });
 
-    // Update Stats (Count of unique shape_ids = count of original shapes)
-    statTotal.textContent = originalCount > 0 ? originalCount : data.features.length;
+    // Update Stats
+    statTotal.textContent = originalCount > 0 ? originalCount : (currentFeatures.length / 2);
 
     // Fit map to data
     if (bounds.isValid()) {
