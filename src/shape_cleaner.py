@@ -6,18 +6,39 @@ class ShapeCleaner:
     def __init__(self):
         pass
         
+    def _perpendicular_distance_meters(self, p_tip, p_start, p_end, meters_per_deg_lon, meters_per_deg_lat):
+        """
+        Calculates the perpendicular distance in meters from point p_tip (x0, y0)
+        to the baseline line segment connecting p_start (x1, y1) and p_end (x2, y2).
+        """
+        x0, y0 = p_tip[0] * meters_per_deg_lon, p_tip[1] * meters_per_deg_lat
+        x1, y1 = p_start[0] * meters_per_deg_lon, p_start[1] * meters_per_deg_lat
+        x2, y2 = p_end[0] * meters_per_deg_lon, p_end[1] * meters_per_deg_lat
+        
+        dx = x2 - x1
+        dy = y2 - y1
+        
+        if dx == 0 and dy == 0:
+            return math.hypot(x0 - x1, y0 - y1)
+            
+        num = abs(dy * x0 - dx * y0 + x2 * y1 - y2 * x1)
+        den = math.hypot(dx, dy)
+        return num / den
+
     def filter_perpendicular_stubs(self, shape_df: pd.DataFrame, max_stub_meters: float = 75.0) -> pd.DataFrame:
         """
-        Pre-matching filter that measures the actual distance out to the tip of an out-and-back spur/tail.
-        If a sequence of points leaves a junction, travels out to a tip, and returns,
-        and the distance to the tip is <= max_stub_meters and forms a sharp out-and-back turn (< 110 deg),
-        the spur point is removed.
+        Pre-matching filter that measures the perpendicular distance of candidate points
+        from the baseline chord connecting preceding and succeeding trajectory points.
         
-        This protects 100% of normal road curves because normal road bends have gentle angles (140-175 deg).
+        If a point P_i deviates laterally from the baseline (P_{i-1} -> P_{i+1}) by <= max_stub_meters
+        and forms a sharp out-and-back turn (< 110 deg), the spur point is removed.
+        
+        This protects 100% of normal road curves because normal road bends have gentle angles (140-175 deg)
+        or large continuous lateral offsets across subsequent points.
         
         Args:
             shape_df: DataFrame with 'shape_pt_lon' and 'shape_pt_lat'.
-            max_stub_meters: Maximum one-way distance in meters from junction to the tip of the tail.
+            max_stub_meters: Maximum perpendicular deviation distance in meters for spur removal.
             
         Returns:
             Filtered DataFrame with spur points removed.
@@ -46,8 +67,15 @@ class ShapeCleaner:
                 meters_per_deg_lat = 111000.0
                 meters_per_deg_lon = 111000.0 * math.cos(mean_lat)
                 
-                # Distance from prev to the tip of the spur
-                tip_dist = math.hypot((p_tip[0] - p_prev[0]) * meters_per_deg_lon, (p_tip[1] - p_prev[1]) * meters_per_deg_lat)
+                # Perpendicular deviation distance from p_tip to baseline chord (p_prev -> p_next)
+                perp_dist = self._perpendicular_distance_meters(p_tip, p_prev, p_next, meters_per_deg_lon, meters_per_deg_lat)
+                
+                # Baseline distance (p_prev -> p_next) vs Path distance (p_prev -> p_tip -> p_next)
+                dist_prev_next = math.hypot((p_next[0] - p_prev[0]) * meters_per_deg_lon, (p_next[1] - p_prev[1]) * meters_per_deg_lat)
+                dist_prev_tip = math.hypot((p_tip[0] - p_prev[0]) * meters_per_deg_lon, (p_tip[1] - p_prev[1]) * meters_per_deg_lat)
+                dist_tip_next = math.hypot((p_next[0] - p_tip[0]) * meters_per_deg_lon, (p_next[1] - p_tip[1]) * meters_per_deg_lat)
+                path_dist = dist_prev_tip + dist_tip_next
+                detour_ratio = path_dist / max(1.0, dist_prev_next)
                 
                 # Angle at p_tip
                 v1 = ((p_prev[0] - p_tip[0]) * meters_per_deg_lon, (p_prev[1] - p_tip[1]) * meters_per_deg_lat)
@@ -62,8 +90,13 @@ class ShapeCleaner:
                 else:
                     angle_deg = 180.0
                     
-                # An out-and-back tail forms a sharp acute tip (< 110 deg) AND its tip distance <= max_stub_meters
-                if tip_dist <= max_stub_meters and angle_deg < 110.0:
+                # An out-and-back tail forms:
+                # 1) A sharp acute tip (< 110 deg) AND perp_dist <= max_stub_meters
+                # 2) OR a mid-trace lateral chord bump (perp_dist <= max_stub_meters and detour_ratio < 1.25)
+                is_acute_stub = perp_dist <= max_stub_meters and angle_deg < 110.0
+                is_lateral_chord_spike = perp_dist <= max_stub_meters and dist_prev_next > 20.0 and detour_ratio < 1.25 and angle_deg < 165.0
+                
+                if is_acute_stub or is_lateral_chord_spike:
                     drop_indices.append(i)
                     changed = True
                     break # Restart loop after dropping to re-evaluate adjacent points

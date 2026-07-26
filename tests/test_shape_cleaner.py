@@ -44,3 +44,23 @@ def test_filter_perpendicular_stubs():
     # Point 1 (the tip of the 20m spur) should be removed
     assert len(filtered_df) == 2
     assert list(filtered_df['shape_pt_lon']) == [0.0, 0.0]
+
+def test_filter_mid_trace_long_baseline_stub():
+    import pandas as pd
+    cleaner = ShapeCleaner()
+    
+    # P0: (0.0, 0.0) -> Start on main street
+    # P1: (0.00015, 0.0008) -> 15m East spike on side street, but 80m up the main street (long baseline distance)
+    # P2: (0.0, 0.0016) -> 80m further down main street
+    data = {
+        'shape_pt_lon': [0.0, 0.00015, 0.0],
+        'shape_pt_lat': [0.0, 0.0008, 0.0016],
+        'shape_pt_sequence': [1, 2, 3]
+    }
+    df = pd.DataFrame(data)
+    
+    filtered_df = cleaner.filter_perpendicular_stubs(df, max_stub_meters=75.0)
+    
+    # The 15m lateral spike (P1) must be removed even though P0->P1 distance is 80m!
+    assert len(filtered_df) == 2
+    assert list(filtered_df['shape_pt_lon']) == [0.0, 0.0]
