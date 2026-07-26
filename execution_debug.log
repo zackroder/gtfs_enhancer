@@ -1,246 +1,246 @@
-[2026-07-26 09:55:48] [INFO] [Thread-MainThread] Parsing shapes from http://localhost:4000/gtfs.zip...
-[2026-07-26 09:55:51] [INFO] [Thread-MainThread] Found 120 unique shapes for bus routes.
-[2026-07-26 09:55:51] [INFO] [Thread-MainThread] Starting map matching using 16 parallel worker thread(s) (Snap Radius: 15.0m | Bearings: True ±45°)...
-[2026-07-26 09:55:51] [INFO] [Thread-ThreadPoolExecutor-0_11] Pre-matching filter removed 42 side-stub point(s) from shape_id=67901604
-[2026-07-26 09:55:51] [INFO] [Thread-ThreadPoolExecutor-0_14] Pre-matching filter removed 47 side-stub point(s) from shape_id=67901627
-[2026-07-26 09:55:52] [INFO] [Thread-ThreadPoolExecutor-0_14] Successfully processed shape_id=67901627 | distance=5000.0m | confidence=[0.9369] | segments=1 | osm_nodes=892
-[2026-07-26 09:55:52] [INFO] [Thread-ThreadPoolExecutor-0_11] Successfully processed shape_id=67901604 | distance=4648.5m | confidence=[0.9837] | segments=1 | osm_nodes=893
-[2026-07-26 09:55:53] [INFO] [Thread-ThreadPoolExecutor-0_10] Pre-matching filter removed 64 side-stub point(s) from shape_id=67901603
-[2026-07-26 09:55:53] [INFO] [Thread-ThreadPoolExecutor-0_10] Successfully processed shape_id=67901603 | distance=7442.2m | confidence=[0.9833] | segments=1 | osm_nodes=406
-[2026-07-26 09:55:53] [INFO] [Thread-ThreadPoolExecutor-0_7] Pre-matching filter removed 66 side-stub point(s) from shape_id=67901597
-[2026-07-26 09:55:53] [INFO] [Thread-ThreadPoolExecutor-0_7] Successfully processed shape_id=67901597 | distance=7251.9m | confidence=[0.9821] | segments=1 | osm_nodes=387
-[2026-07-26 09:55:53] [INFO] [Thread-ThreadPoolExecutor-0_1] Pre-matching filter removed 72 side-stub point(s) from shape_id=67900420
-[2026-07-26 09:55:53] [INFO] [Thread-ThreadPoolExecutor-0_1] Successfully processed shape_id=67900420 | distance=9589.4m | confidence=[0.9858] | segments=1 | osm_nodes=483
-[2026-07-26 09:55:53] [INFO] [Thread-ThreadPoolExecutor-0_14] Pre-matching filter removed 60 side-stub point(s) from shape_id=67901748
-[2026-07-26 09:55:53] [INFO] [Thread-ThreadPoolExecutor-0_11] Pre-matching filter removed 61 side-stub point(s) from shape_id=67901763
-[2026-07-26 09:55:53] [INFO] [Thread-ThreadPoolExecutor-0_14] Successfully processed shape_id=67901748 | distance=7429.4m | confidence=[0.9814] | segments=1 | osm_nodes=386
-[2026-07-26 09:55:53] [INFO] [Thread-ThreadPoolExecutor-0_14] Pre-matching filter removed 27 side-stub point(s) from shape_id=67903634
-[2026-07-26 09:55:53] [INFO] [Thread-ThreadPoolExecutor-0_11] Successfully processed shape_id=67901763 | distance=7670.2m | confidence=[0.986] | segments=1 | osm_nodes=412
-[2026-07-26 09:55:53] [INFO] [Thread-ThreadPoolExecutor-0_11] Pre-matching filter removed 28 side-stub point(s) from shape_id=67903637
-[2026-07-26 09:55:53] [INFO] [Thread-ThreadPoolExecutor-0_14] Successfully processed shape_id=67903634 | distance=4280.5m | confidence=[0.9683] | segments=1 | osm_nodes=754
-[2026-07-26 09:55:53] [INFO] [Thread-ThreadPoolExecutor-0_11] Successfully processed shape_id=67903637 | distance=4454.2m | confidence=[0.9695] | segments=1 | osm_nodes=806
-[2026-07-26 09:55:53] [INFO] [Thread-ThreadPoolExecutor-0_4] Pre-matching filter removed 79 side-stub point(s) from shape_id=67901054
-[2026-07-26 09:55:53] [INFO] [Thread-ThreadPoolExecutor-0_4] Successfully processed shape_id=67901054 | distance=17415.0m | confidence=[0.9806] | segments=1 | osm_nodes=904
-[2026-07-26 09:55:54] [INFO] [Thread-ThreadPoolExecutor-0_12] Pre-matching filter removed 95 side-stub point(s) from shape_id=67901611
-[2026-07-26 09:55:54] [INFO] [Thread-ThreadPoolExecutor-0_12] Successfully processed shape_id=67901611 | distance=11364.5m | confidence=[0.9806] | segments=1 | osm_nodes=604
-[2026-07-26 09:55:54] [INFO] [Thread-ThreadPoolExecutor-0_8] Pre-matching filter removed 109 side-stub point(s) from shape_id=67901598
-[2026-07-26 09:55:54] [INFO] [Thread-ThreadPoolExecutor-0_15] Pre-matching filter removed 108 side-stub point(s) from shape_id=67901628
-[2026-07-26 09:55:54] [INFO] [Thread-ThreadPoolExecutor-0_0] Pre-matching filter removed 103 side-stub point(s) from shape_id=67900246
-[2026-07-26 09:55:54] [INFO] [Thread-ThreadPoolExecutor-0_8] Successfully processed shape_id=67901598 | distance=11901.5m | confidence=[0.9819] | segments=1 | osm_nodes=657
-[2026-07-26 09:55:54] [INFO] [Thread-ThreadPoolExecutor-0_15] Successfully processed shape_id=67901628 | distance=11861.2m | confidence=[0.983] | segments=1 | osm_nodes=650
-[2026-07-26 09:55:54] [INFO] [Thread-ThreadPoolExecutor-0_0] Successfully processed shape_id=67900246 | distance=18073.1m | confidence=[0.9714] | segments=1 | osm_nodes=1036
-[2026-07-26 09:55:55] [INFO] [Thread-ThreadPoolExecutor-0_10] Pre-matching filter removed 73 side-stub point(s) from shape_id=67902673
-[2026-07-26 09:55:55] [INFO] [Thread-ThreadPoolExecutor-0_10] Successfully processed shape_id=67902673 | distance=12321.8m | confidence=[0.8749] | segments=1 | osm_nodes=627
-[2026-07-26 09:55:55] [INFO] [Thread-ThreadPoolExecutor-0_10] Pre-matching filter removed 27 side-stub point(s) from shape_id=67904601
-[2026-07-26 09:55:55] [INFO] [Thread-ThreadPoolExecutor-0_10] Successfully processed shape_id=67904601 | distance=3267.3m | confidence=[0.9847] | segments=1 | osm_nodes=675
-[2026-07-26 09:55:56] [INFO] [Thread-ThreadPoolExecutor-0_14] Pre-matching filter removed 91 side-stub point(s) from shape_id=67903929
-[2026-07-26 09:55:56] [INFO] [Thread-ThreadPoolExecutor-0_13] Pre-matching filter removed 156 side-stub point(s) from shape_id=67901612
-[2026-07-26 09:55:56] [INFO] [Thread-ThreadPoolExecutor-0_14] Successfully processed shape_id=67903929 | distance=12107.3m | confidence=[0.9812] | segments=1 | osm_nodes=662
-[2026-07-26 09:55:56] [INFO] [Thread-ThreadPoolExecutor-0_13] Successfully processed shape_id=67901612 | distance=18373.0m | confidence=[0.9818] | segments=1 | osm_nodes=979
-[2026-07-26 09:55:56] [INFO] [Thread-ThreadPoolExecutor-0_6] Pre-matching filter removed 158 side-stub point(s) from shape_id=67901180
-[2026-07-26 09:55:56] [INFO] [Thread-ThreadPoolExecutor-0_8] Pre-matching filter removed 66 side-stub point(s) from shape_id=67904355
-[2026-07-26 09:55:56] [INFO] [Thread-ThreadPoolExecutor-0_8] Successfully processed shape_id=67904355 | distance=9617.5m | confidence=[0.981] | segments=1 | osm_nodes=516
-[2026-07-26 09:55:56] [INFO] [Thread-ThreadPoolExecutor-0_8] Pre-matching filter removed 43 side-stub point(s) from shape_id=67906492
-[2026-07-26 09:55:56] [INFO] [Thread-ThreadPoolExecutor-0_9] Pre-matching filter removed 168 side-stub point(s) from shape_id=67901599
-[2026-07-26 09:55:56] [INFO] [Thread-ThreadPoolExecutor-0_6] Successfully processed shape_id=67901180 | distance=25476.4m | confidence=[0.9817] | segments=1 | osm_nodes=1414
-[2026-07-26 09:55:57] [INFO] [Thread-ThreadPoolExecutor-0_9] Successfully processed shape_id=67901599 | distance=18274.1m | confidence=[0.9847] | segments=1 | osm_nodes=932
-[2026-07-26 09:55:57] [INFO] [Thread-ThreadPoolExecutor-0_8] Successfully processed shape_id=67906492 | distance=4566.2m | confidence=[0.9244] | segments=1 | osm_nodes=811
-[2026-07-26 09:55:57] [INFO] [Thread-ThreadPoolExecutor-0_11] Pre-matching filter removed 103 side-stub point(s) from shape_id=67903932
-[2026-07-26 09:55:57] [INFO] [Thread-ThreadPoolExecutor-0_4] Pre-matching filter removed 99 side-stub point(s) from shape_id=67903935
-[2026-07-26 09:55:57] [INFO] [Thread-ThreadPoolExecutor-0_11] Successfully processed shape_id=67903932 | distance=17814.8m | confidence=[0.9736] | segments=1 | osm_nodes=1012
-[2026-07-26 09:55:57] [INFO] [Thread-ThreadPoolExecutor-0_4] Successfully processed shape_id=67903935 | distance=14742.6m | confidence=[0.9811] | segments=1 | osm_nodes=812
-[2026-07-26 09:55:57] [INFO] [Thread-ThreadPoolExecutor-0_4] Pre-matching filter removed 7 side-stub point(s) from shape_id=67906982
-[2026-07-26 09:55:57] [INFO] [Thread-ThreadPoolExecutor-0_5] Pre-matching filter removed 169 side-stub point(s) from shape_id=67901178
-[2026-07-26 09:55:57] [INFO] [Thread-ThreadPoolExecutor-0_4] Successfully processed shape_id=67906982 | distance=4104.6m | confidence=[0.9512] | segments=1 | osm_nodes=638
-[2026-07-26 09:55:57] [INFO] [Thread-ThreadPoolExecutor-0_5] Successfully processed shape_id=67901178 | distance=25632.8m | confidence=[0.9849] | segments=1 | osm_nodes=1416
-[2026-07-26 09:55:57] [INFO] [Thread-ThreadPoolExecutor-0_15] Pre-matching filter removed 95 side-stub point(s) from shape_id=67904357
-[2026-07-26 09:55:57] [INFO] [Thread-ThreadPoolExecutor-0_2] Pre-matching filter removed 185 side-stub point(s) from shape_id=67900582
-[2026-07-26 09:55:57] [INFO] [Thread-ThreadPoolExecutor-0_15] Successfully processed shape_id=67904357 | distance=10944.9m | confidence=[0.9841] | segments=1 | osm_nodes=540
-[2026-07-26 09:55:57] [INFO] [Thread-ThreadPoolExecutor-0_2] Successfully processed shape_id=67900582 | distance=30299.5m | confidence=[0.9844] | segments=1 | osm_nodes=1379
-[2026-07-26 09:55:58] [INFO] [Thread-ThreadPoolExecutor-0_12] Pre-matching filter removed 106 side-stub point(s) from shape_id=67903936
-[2026-07-26 09:55:58] [INFO] [Thread-ThreadPoolExecutor-0_12] Successfully processed shape_id=67903936 | distance=17238.8m | confidence=[0.9817] | segments=1 | osm_nodes=965
-[2026-07-26 09:55:58] [INFO] [Thread-ThreadPoolExecutor-0_0] Pre-matching filter removed 103 side-stub point(s) from shape_id=67904561
-[2026-07-26 09:55:58] [INFO] [Thread-ThreadPoolExecutor-0_0] Successfully processed shape_id=67904561 | distance=13606.8m | confidence=[0.9821] | segments=1 | osm_nodes=670
-[2026-07-26 09:55:58] [INFO] [Thread-ThreadPoolExecutor-0_14] Pre-matching filter removed 54 side-stub point(s) from shape_id=67905422
-[2026-07-26 09:55:58] [INFO] [Thread-ThreadPoolExecutor-0_14] Successfully processed shape_id=67905422 | distance=7433.4m | confidence=[0.9819] | segments=1 | osm_nodes=423
-[2026-07-26 09:55:58] [INFO] [Thread-ThreadPoolExecutor-0_3] Pre-matching filter removed 197 side-stub point(s) from shape_id=67900593
-[2026-07-26 09:55:58] [INFO] [Thread-ThreadPoolExecutor-0_3] Successfully processed shape_id=67900593 | distance=31585.9m | confidence=[0.9824] | segments=1 | osm_nodes=1471
-[2026-07-26 09:55:58] [INFO] [Thread-ThreadPoolExecutor-0_7] Pre-matching filter removed 169 side-stub point(s) from shape_id=67903498
-[2026-07-26 09:55:59] [INFO] [Thread-ThreadPoolExecutor-0_1] Pre-matching filter removed 171 side-stub point(s) from shape_id=67903501
-[2026-07-26 09:55:59] [INFO] [Thread-ThreadPoolExecutor-0_7] Successfully processed shape_id=67903498 | distance=18281.1m | confidence=[0.9849] | segments=1 | osm_nodes=926
-[2026-07-26 09:55:59] [INFO] [Thread-ThreadPoolExecutor-0_1] Successfully processed shape_id=67903501 | distance=18639.6m | confidence=[0.9824] | segments=1 | osm_nodes=980
-[2026-07-26 09:55:59] [INFO] [Thread-ThreadPoolExecutor-0_13] Pre-matching filter removed 85 side-stub point(s) from shape_id=67905725
-[2026-07-26 09:55:59] [INFO] [Thread-ThreadPoolExecutor-0_13] Successfully processed shape_id=67905725 | distance=12962.1m | confidence=[0.9604] | segments=1 | osm_nodes=715
-[2026-07-26 09:55:59] [INFO] [Thread-ThreadPoolExecutor-0_8] Pre-matching filter removed 79 side-stub point(s) from shape_id=67906662
-[2026-07-26 09:55:59] [INFO] [Thread-ThreadPoolExecutor-0_9] Pre-matching filter removed 81 side-stub point(s) from shape_id=67906661
-[2026-07-26 09:55:59] [INFO] [Thread-ThreadPoolExecutor-0_8] Successfully processed shape_id=67906662 | distance=15348.0m | confidence=[0.9841] | segments=1 | osm_nodes=807
-[2026-07-26 09:55:59] [INFO] [Thread-ThreadPoolExecutor-0_9] Successfully processed shape_id=67906661 | distance=16281.1m | confidence=[0.982] | segments=1 | osm_nodes=877
-[2026-07-26 09:56:00] [INFO] [Thread-ThreadPoolExecutor-0_13] Pre-matching filter removed 48 side-stub point(s) from shape_id=67918413
-[2026-07-26 09:56:00] [INFO] [Thread-ThreadPoolExecutor-0_13] Successfully processed shape_id=67918413 | distance=16638.5m | confidence=[0.9855] | segments=1 | osm_nodes=810
-[2026-07-26 09:56:01] [INFO] [Thread-ThreadPoolExecutor-0_11] Pre-matching filter removed 131 side-stub point(s) from shape_id=67906665
-[2026-07-26 09:56:01] [INFO] [Thread-ThreadPoolExecutor-0_11] Successfully processed shape_id=67906665 | distance=15087.5m | confidence=[0.9843] | segments=1 | osm_nodes=755
-[2026-07-26 09:56:01] [INFO] [Thread-ThreadPoolExecutor-0_6] Pre-matching filter removed 137 side-stub point(s) from shape_id=67906658
-[2026-07-26 09:56:01] [INFO] [Thread-ThreadPoolExecutor-0_6] Successfully processed shape_id=67906658 | distance=16100.1m | confidence=[0.9851] | segments=1 | osm_nodes=833
-[2026-07-26 09:56:01] [INFO] [Thread-ThreadPoolExecutor-0_4] Pre-matching filter removed 125 side-stub point(s) from shape_id=67907107
-[2026-07-26 09:56:01] [INFO] [Thread-ThreadPoolExecutor-0_4] Successfully processed shape_id=67907107 | distance=21245.2m | confidence=[0.9857] | segments=1 | osm_nodes=1041
-[2026-07-26 09:56:01] [INFO] [Thread-ThreadPoolExecutor-0_7] Pre-matching filter removed 85 side-stub point(s) from shape_id=67910916
-[2026-07-26 09:56:02] [INFO] [Thread-ThreadPoolExecutor-0_7] Successfully processed shape_id=67910916 | distance=10492.9m | confidence=[0.9839] | segments=1 | osm_nodes=523
-[2026-07-26 09:56:02] [INFO] [Thread-ThreadPoolExecutor-0_5] Pre-matching filter removed 134 side-stub point(s) from shape_id=67909370
-[2026-07-26 09:56:02] [INFO] [Thread-ThreadPoolExecutor-0_5] Successfully processed shape_id=67909370 | distance=23791.8m | confidence=[0.9826] | segments=1 | osm_nodes=1077
-[2026-07-26 09:56:02] [INFO] [Thread-ThreadPoolExecutor-0_8] Pre-matching filter removed 90 side-stub point(s) from shape_id=67918414
-[2026-07-26 09:56:03] [INFO] [Thread-ThreadPoolExecutor-0_10] Pre-matching filter removed 191 side-stub point(s) from shape_id=67904680
-[2026-07-26 09:56:03] [INFO] [Thread-ThreadPoolExecutor-0_8] Successfully processed shape_id=67918414 | distance=21634.1m | confidence=[0.9824] | segments=1 | osm_nodes=1132
-[2026-07-26 09:56:03] [INFO] [Thread-ThreadPoolExecutor-0_10] Successfully processed shape_id=67904680 | distance=27766.0m | confidence=[0.9834] | segments=1 | osm_nodes=1348
-[2026-07-26 09:56:03] [INFO] [Thread-ThreadPoolExecutor-0_9] Pre-matching filter removed 105 side-stub point(s) from shape_id=67918415
-[2026-07-26 09:56:03] [INFO] [Thread-ThreadPoolExecutor-0_9] Successfully processed shape_id=67918415 | distance=22565.1m | confidence=[0.9842] | segments=1 | osm_nodes=1133
-[2026-07-26 09:56:04] [INFO] [Thread-ThreadPoolExecutor-0_4] Pre-matching filter removed 49 side-stub point(s) from shape_id=67929277
-[2026-07-26 09:56:04] [INFO] [Thread-ThreadPoolExecutor-0_4] Successfully processed shape_id=67929277 | distance=16011.0m | confidence=[0.9838] | segments=1 | osm_nodes=709
-[2026-07-26 09:56:04] [INFO] [Thread-ThreadPoolExecutor-0_3] Pre-matching filter removed 153 side-stub point(s) from shape_id=67909794
-[2026-07-26 09:56:04] [INFO] [Thread-ThreadPoolExecutor-0_1] Pre-matching filter removed 129 side-stub point(s) from shape_id=67914134
-[2026-07-26 09:56:04] [INFO] [Thread-ThreadPoolExecutor-0_1] Successfully processed shape_id=67914134 | distance=20270.3m | confidence=[0.9571] | segments=1 | osm_nodes=904
-[2026-07-26 09:56:04] [INFO] [Thread-ThreadPoolExecutor-0_3] Successfully processed shape_id=67909794 | distance=24467.0m | confidence=[0.9821] | segments=1 | osm_nodes=1161
-[2026-07-26 09:56:04] [INFO] [Thread-ThreadPoolExecutor-0_2] Pre-matching filter removed 163 side-stub point(s) from shape_id=67909372
-[2026-07-26 09:56:04] [INFO] [Thread-ThreadPoolExecutor-0_2] Successfully processed shape_id=67909372 | distance=28171.8m | confidence=[0.9826] | segments=1 | osm_nodes=1309
-[2026-07-26 09:56:04] [INFO] [Thread-ThreadPoolExecutor-0_13] Pre-matching filter removed 94 side-stub point(s) from shape_id=67919369
-[2026-07-26 09:56:04] [INFO] [Thread-ThreadPoolExecutor-0_13] Successfully processed shape_id=67919369 | distance=10014.6m | confidence=[0.9847] | segments=1 | osm_nodes=527
-[2026-07-26 09:56:04] [INFO] [Thread-ThreadPoolExecutor-0_7] Pre-matching filter removed 67 side-stub point(s) from shape_id=67929278
-[2026-07-26 09:56:04] [INFO] [Thread-ThreadPoolExecutor-0_7] Successfully processed shape_id=67929278 | distance=16436.9m | confidence=[0, 0.9853] | segments=2 | osm_nodes=715
-[2026-07-26 09:56:04] [INFO] [Thread-ThreadPoolExecutor-0_14] Pre-matching filter removed 166 side-stub point(s) from shape_id=67909717
-[2026-07-26 09:56:05] [INFO] [Thread-ThreadPoolExecutor-0_14] Successfully processed shape_id=67909717 | distance=28455.1m | confidence=[0.9825] | segments=1 | osm_nodes=1308
-[2026-07-26 09:56:05] [INFO] [Thread-ThreadPoolExecutor-0_0] Pre-matching filter removed 180 side-stub point(s) from shape_id=67909375
-[2026-07-26 09:56:05] [INFO] [Thread-ThreadPoolExecutor-0_12] Pre-matching filter removed 184 side-stub point(s) from shape_id=67909373
-[2026-07-26 09:56:05] [INFO] [Thread-ThreadPoolExecutor-0_0] Successfully processed shape_id=67909375 | distance=30273.2m | confidence=[0.9824] | segments=1 | osm_nodes=1361
-[2026-07-26 09:56:05] [INFO] [Thread-ThreadPoolExecutor-0_6] Pre-matching filter removed 91 side-stub point(s) from shape_id=67928325
-[2026-07-26 09:56:05] [INFO] [Thread-ThreadPoolExecutor-0_12] Successfully processed shape_id=67909373 | distance=27597.8m | confidence=[0.982] | segments=1 | osm_nodes=1324
-[2026-07-26 09:56:05] [INFO] [Thread-ThreadPoolExecutor-0_6] Successfully processed shape_id=67928325 | distance=10931.1m | confidence=[0.9806] | segments=1 | osm_nodes=573
-[2026-07-26 09:56:05] [INFO] [Thread-ThreadPoolExecutor-0_6] Pre-matching filter removed 42 side-stub point(s) from shape_id=68001604
-[2026-07-26 09:56:05] [INFO] [Thread-ThreadPoolExecutor-0_15] Pre-matching filter removed 196 side-stub point(s) from shape_id=67909371
-[2026-07-26 09:56:05] [INFO] [Thread-ThreadPoolExecutor-0_11] Pre-matching filter removed 101 side-stub point(s) from shape_id=67928322
-[2026-07-26 09:56:05] [INFO] [Thread-ThreadPoolExecutor-0_15] Successfully processed shape_id=67909371 | distance=31462.4m | confidence=[0.9836] | segments=1 | osm_nodes=1485
-[2026-07-26 09:56:05] [INFO] [Thread-ThreadPoolExecutor-0_6] Successfully processed shape_id=68001604 | distance=4648.5m | confidence=[0.9837] | segments=1 | osm_nodes=893
-[2026-07-26 09:56:05] [INFO] [Thread-ThreadPoolExecutor-0_11] Successfully processed shape_id=67928322 | distance=11023.1m | confidence=[0.9858] | segments=1 | osm_nodes=554
-[2026-07-26 09:56:05] [INFO] [Thread-ThreadPoolExecutor-0_11] Pre-matching filter removed 47 side-stub point(s) from shape_id=68001627
-[2026-07-26 09:56:05] [INFO] [Thread-ThreadPoolExecutor-0_11] Successfully processed shape_id=68001627 | distance=5000.0m | confidence=[0.9369] | segments=1 | osm_nodes=892
-[2026-07-26 09:56:06] [INFO] [Thread-ThreadPoolExecutor-0_9] Pre-matching filter removed 72 side-stub point(s) from shape_id=68000420
-[2026-07-26 09:56:06] [INFO] [Thread-ThreadPoolExecutor-0_5] Pre-matching filter removed 106 side-stub point(s) from shape_id=67929285
-[2026-07-26 09:56:06] [INFO] [Thread-ThreadPoolExecutor-0_9] Successfully processed shape_id=68000420 | distance=9589.4m | confidence=[0.9858] | segments=1 | osm_nodes=483
-[2026-07-26 09:56:06] [INFO] [Thread-ThreadPoolExecutor-0_5] Successfully processed shape_id=67929285 | distance=11197.7m | confidence=[0.9817] | segments=1 | osm_nodes=574
-[2026-07-26 09:56:06] [INFO] [Thread-ThreadPoolExecutor-0_7] Pre-matching filter removed 66 side-stub point(s) from shape_id=68001597
-[2026-07-26 09:56:06] [INFO] [Thread-ThreadPoolExecutor-0_10] Pre-matching filter removed 105 side-stub point(s) from shape_id=68000246
-[2026-07-26 09:56:06] [INFO] [Thread-ThreadPoolExecutor-0_7] Successfully processed shape_id=68001597 | distance=7251.9m | confidence=[0.9821] | segments=1 | osm_nodes=387
-[2026-07-26 09:56:06] [INFO] [Thread-ThreadPoolExecutor-0_8] Pre-matching filter removed 110 side-stub point(s) from shape_id=67929286
-[2026-07-26 09:56:06] [INFO] [Thread-ThreadPoolExecutor-0_10] Successfully processed shape_id=68000246 | distance=18072.9m | confidence=[0.9714] | segments=1 | osm_nodes=1034
-[2026-07-26 09:56:06] [INFO] [Thread-ThreadPoolExecutor-0_8] Successfully processed shape_id=67929286 | distance=11631.1m | confidence=[0.9816] | segments=1 | osm_nodes=605
-[2026-07-26 09:56:06] [INFO] [Thread-ThreadPoolExecutor-0_3] Pre-matching filter removed 79 side-stub point(s) from shape_id=68001054
-[2026-07-26 09:56:06] [INFO] [Thread-ThreadPoolExecutor-0_3] Successfully processed shape_id=68001054 | distance=17415.0m | confidence=[0.9806] | segments=1 | osm_nodes=904
-[2026-07-26 09:56:06] [INFO] [Thread-ThreadPoolExecutor-0_3] Pre-matching filter removed 27 side-stub point(s) from shape_id=68003634
-[2026-07-26 09:56:07] [INFO] [Thread-ThreadPoolExecutor-0_12] Pre-matching filter removed 64 side-stub point(s) from shape_id=68001603
-[2026-07-26 09:56:07] [INFO] [Thread-ThreadPoolExecutor-0_3] Successfully processed shape_id=68003634 | distance=4280.5m | confidence=[0.9683] | segments=1 | osm_nodes=754
-[2026-07-26 09:56:07] [INFO] [Thread-ThreadPoolExecutor-0_12] Successfully processed shape_id=68001603 | distance=7442.2m | confidence=[0.9833] | segments=1 | osm_nodes=406
-[2026-07-26 09:56:07] [INFO] [Thread-ThreadPoolExecutor-0_3] Pre-matching filter removed 28 side-stub point(s) from shape_id=68003637
-[2026-07-26 09:56:07] [INFO] [Thread-ThreadPoolExecutor-0_3] Successfully processed shape_id=68003637 | distance=4454.2m | confidence=[0.9695] | segments=1 | osm_nodes=806
-[2026-07-26 09:56:07] [INFO] [Thread-ThreadPoolExecutor-0_9] Pre-matching filter removed 60 side-stub point(s) from shape_id=68001748
-[2026-07-26 09:56:07] [INFO] [Thread-ThreadPoolExecutor-0_9] Successfully processed shape_id=68001748 | distance=7429.4m | confidence=[0.9814] | segments=1 | osm_nodes=386
-[2026-07-26 09:56:08] [INFO] [Thread-ThreadPoolExecutor-0_5] Pre-matching filter removed 61 side-stub point(s) from shape_id=68001763
-[2026-07-26 09:56:08] [INFO] [Thread-ThreadPoolExecutor-0_5] Successfully processed shape_id=68001763 | distance=7670.2m | confidence=[0.986] | segments=1 | osm_nodes=412
-[2026-07-26 09:56:08] [INFO] [Thread-ThreadPoolExecutor-0_15] Pre-matching filter removed 95 side-stub point(s) from shape_id=68001611
-[2026-07-26 09:56:08] [INFO] [Thread-ThreadPoolExecutor-0_15] Successfully processed shape_id=68001611 | distance=11364.5m | confidence=[0.9806] | segments=1 | osm_nodes=604
-[2026-07-26 09:56:08] [INFO] [Thread-ThreadPoolExecutor-0_14] Pre-matching filter removed 109 side-stub point(s) from shape_id=68001598
-[2026-07-26 09:56:08] [INFO] [Thread-ThreadPoolExecutor-0_14] Successfully processed shape_id=68001598 | distance=11901.5m | confidence=[0.9819] | segments=1 | osm_nodes=657
-[2026-07-26 09:56:08] [INFO] [Thread-ThreadPoolExecutor-0_11] Pre-matching filter removed 108 side-stub point(s) from shape_id=68001628
-[2026-07-26 09:56:08] [INFO] [Thread-ThreadPoolExecutor-0_11] Successfully processed shape_id=68001628 | distance=11861.2m | confidence=[0.983] | segments=1 | osm_nodes=650
-[2026-07-26 09:56:09] [INFO] [Thread-ThreadPoolExecutor-0_7] Pre-matching filter removed 73 side-stub point(s) from shape_id=68002673
-[2026-07-26 09:56:09] [INFO] [Thread-ThreadPoolExecutor-0_7] Successfully processed shape_id=68002673 | distance=12321.8m | confidence=[0.8749] | segments=1 | osm_nodes=627
-[2026-07-26 09:56:09] [INFO] [Thread-ThreadPoolExecutor-0_7] Pre-matching filter removed 27 side-stub point(s) from shape_id=68004601
-[2026-07-26 09:56:09] [INFO] [Thread-ThreadPoolExecutor-0_7] Successfully processed shape_id=68004601 | distance=3267.3m | confidence=[0.9847] | segments=1 | osm_nodes=675
-[2026-07-26 09:56:10] [INFO] [Thread-ThreadPoolExecutor-0_12] Pre-matching filter removed 93 side-stub point(s) from shape_id=68003929
-[2026-07-26 09:56:10] [INFO] [Thread-ThreadPoolExecutor-0_13] Pre-matching filter removed 158 side-stub point(s) from shape_id=68001180
-[2026-07-26 09:56:10] [INFO] [Thread-ThreadPoolExecutor-0_12] Successfully processed shape_id=68003929 | distance=12107.3m | confidence=[0.9812] | segments=1 | osm_nodes=662
-[2026-07-26 09:56:10] [INFO] [Thread-ThreadPoolExecutor-0_13] Successfully processed shape_id=68001180 | distance=25476.4m | confidence=[0.9817] | segments=1 | osm_nodes=1414
-[2026-07-26 09:56:10] [INFO] [Thread-ThreadPoolExecutor-0_4] Pre-matching filter removed 185 side-stub point(s) from shape_id=68000582
-[2026-07-26 09:56:10] [INFO] [Thread-ThreadPoolExecutor-0_6] Pre-matching filter removed 156 side-stub point(s) from shape_id=68001612
-[2026-07-26 09:56:10] [INFO] [Thread-ThreadPoolExecutor-0_15] Pre-matching filter removed 66 side-stub point(s) from shape_id=68004355
-[2026-07-26 09:56:10] [INFO] [Thread-ThreadPoolExecutor-0_4] Successfully processed shape_id=68000582 | distance=30299.5m | confidence=[0.9844] | segments=1 | osm_nodes=1379
-[2026-07-26 09:56:10] [INFO] [Thread-ThreadPoolExecutor-0_4] Pre-matching filter removed 43 side-stub point(s) from shape_id=68006492
-[2026-07-26 09:56:10] [INFO] [Thread-ThreadPoolExecutor-0_15] Successfully processed shape_id=68004355 | distance=9617.5m | confidence=[0.981] | segments=1 | osm_nodes=516
-[2026-07-26 09:56:10] [INFO] [Thread-ThreadPoolExecutor-0_6] Successfully processed shape_id=68001612 | distance=18373.0m | confidence=[0.9818] | segments=1 | osm_nodes=979
-[2026-07-26 09:56:10] [INFO] [Thread-ThreadPoolExecutor-0_4] Successfully processed shape_id=68006492 | distance=4566.2m | confidence=[0.9244] | segments=1 | osm_nodes=811
-[2026-07-26 09:56:10] [INFO] [Thread-ThreadPoolExecutor-0_2] Pre-matching filter removed 169 side-stub point(s) from shape_id=68001178
-[2026-07-26 09:56:10] [INFO] [Thread-ThreadPoolExecutor-0_0] Pre-matching filter removed 168 side-stub point(s) from shape_id=68001599
-[2026-07-26 09:56:11] [INFO] [Thread-ThreadPoolExecutor-0_2] Successfully processed shape_id=68001178 | distance=25632.8m | confidence=[0.9849] | segments=1 | osm_nodes=1416
-[2026-07-26 09:56:11] [INFO] [Thread-ThreadPoolExecutor-0_3] Pre-matching filter removed 105 side-stub point(s) from shape_id=68003932
-[2026-07-26 09:56:11] [INFO] [Thread-ThreadPoolExecutor-0_0] Successfully processed shape_id=68001599 | distance=18274.1m | confidence=[0.9847] | segments=1 | osm_nodes=932
-[2026-07-26 09:56:11] [INFO] [Thread-ThreadPoolExecutor-0_0] Pre-matching filter removed 7 side-stub point(s) from shape_id=68006982
-[2026-07-26 09:56:11] [INFO] [Thread-ThreadPoolExecutor-0_3] Successfully processed shape_id=68003932 | distance=17814.6m | confidence=[0.9736] | segments=1 | osm_nodes=1010
-[2026-07-26 09:56:11] [INFO] [Thread-ThreadPoolExecutor-0_0] Successfully processed shape_id=68006982 | distance=4104.6m | confidence=[0.9512] | segments=1 | osm_nodes=638
-[2026-07-26 09:56:11] [INFO] [Thread-ThreadPoolExecutor-0_1] Pre-matching filter removed 197 side-stub point(s) from shape_id=68000593
-[2026-07-26 09:56:11] [INFO] [Thread-ThreadPoolExecutor-0_1] Successfully processed shape_id=68000593 | distance=31585.9m | confidence=[0.9824] | segments=1 | osm_nodes=1471
-[2026-07-26 09:56:11] [INFO] [Thread-ThreadPoolExecutor-0_9] Pre-matching filter removed 101 side-stub point(s) from shape_id=68003935
-[2026-07-26 09:56:11] [INFO] [Thread-ThreadPoolExecutor-0_9] Successfully processed shape_id=68003935 | distance=14742.6m | confidence=[0.9811] | segments=1 | osm_nodes=814
-[2026-07-26 09:56:11] [INFO] [Thread-ThreadPoolExecutor-0_14] Pre-matching filter removed 95 side-stub point(s) from shape_id=68004357
-[2026-07-26 09:56:11] [INFO] [Thread-ThreadPoolExecutor-0_5] Pre-matching filter removed 108 side-stub point(s) from shape_id=68003936
-[2026-07-26 09:56:11] [INFO] [Thread-ThreadPoolExecutor-0_14] Successfully processed shape_id=68004357 | distance=10944.9m | confidence=[0.9841] | segments=1 | osm_nodes=540
-[2026-07-26 09:56:12] [INFO] [Thread-ThreadPoolExecutor-0_5] Successfully processed shape_id=68003936 | distance=17238.8m | confidence=[0.9817] | segments=1 | osm_nodes=967
-[2026-07-26 09:56:12] [INFO] [Thread-ThreadPoolExecutor-0_12] Pre-matching filter removed 56 side-stub point(s) from shape_id=68005422
-[2026-07-26 09:56:12] [INFO] [Thread-ThreadPoolExecutor-0_12] Successfully processed shape_id=68005422 | distance=7433.4m | confidence=[0.9819] | segments=1 | osm_nodes=423
-[2026-07-26 09:56:12] [INFO] [Thread-ThreadPoolExecutor-0_11] Pre-matching filter removed 103 side-stub point(s) from shape_id=68004561
-[2026-07-26 09:56:12] [INFO] [Thread-ThreadPoolExecutor-0_11] Successfully processed shape_id=68004561 | distance=13606.8m | confidence=[0.9821] | segments=1 | osm_nodes=670
-[2026-07-26 09:56:12] [INFO] [Thread-ThreadPoolExecutor-0_10] Pre-matching filter removed 169 side-stub point(s) from shape_id=68003498
-[2026-07-26 09:56:12] [INFO] [Thread-ThreadPoolExecutor-0_10] Successfully processed shape_id=68003498 | distance=18281.1m | confidence=[0.9849] | segments=1 | osm_nodes=926
-[2026-07-26 09:56:13] [INFO] [Thread-ThreadPoolExecutor-0_8] Pre-matching filter removed 171 side-stub point(s) from shape_id=68003501
-[2026-07-26 09:56:13] [INFO] [Thread-ThreadPoolExecutor-0_8] Successfully processed shape_id=68003501 | distance=18639.6m | confidence=[0.9824] | segments=1 | osm_nodes=980
-[2026-07-26 09:56:13] [INFO] [Thread-ThreadPoolExecutor-0_13] Pre-matching filter removed 85 side-stub point(s) from shape_id=68005725
-[2026-07-26 09:56:13] [INFO] [Thread-ThreadPoolExecutor-0_4] Pre-matching filter removed 79 side-stub point(s) from shape_id=68006662
-[2026-07-26 09:56:13] [INFO] [Thread-ThreadPoolExecutor-0_13] Successfully processed shape_id=68005725 | distance=12962.1m | confidence=[0.9604] | segments=1 | osm_nodes=715
-[2026-07-26 09:56:13] [INFO] [Thread-ThreadPoolExecutor-0_6] Pre-matching filter removed 81 side-stub point(s) from shape_id=68006661
-[2026-07-26 09:56:13] [INFO] [Thread-ThreadPoolExecutor-0_4] Successfully processed shape_id=68006662 | distance=15348.0m | confidence=[0.9841] | segments=1 | osm_nodes=807
-[2026-07-26 09:56:13] [INFO] [Thread-ThreadPoolExecutor-0_6] Successfully processed shape_id=68006661 | distance=16281.1m | confidence=[0.982] | segments=1 | osm_nodes=877
-[2026-07-26 09:56:15] [INFO] [Thread-ThreadPoolExecutor-0_13] Pre-matching filter removed 48 side-stub point(s) from shape_id=68018413
-[2026-07-26 09:56:15] [INFO] [Thread-ThreadPoolExecutor-0_2] Pre-matching filter removed 131 side-stub point(s) from shape_id=68006665
-[2026-07-26 09:56:15] [INFO] [Thread-ThreadPoolExecutor-0_13] Successfully processed shape_id=68018413 | distance=16638.5m | confidence=[0.9855] | segments=1 | osm_nodes=810
-[2026-07-26 09:56:15] [INFO] [Thread-ThreadPoolExecutor-0_2] Successfully processed shape_id=68006665 | distance=15087.5m | confidence=[0.9843] | segments=1 | osm_nodes=755
-[2026-07-26 09:56:15] [INFO] [Thread-ThreadPoolExecutor-0_15] Pre-matching filter removed 137 side-stub point(s) from shape_id=68006658
-[2026-07-26 09:56:15] [INFO] [Thread-ThreadPoolExecutor-0_15] Successfully processed shape_id=68006658 | distance=16100.1m | confidence=[0.9851] | segments=1 | osm_nodes=833
-[2026-07-26 09:56:16] [INFO] [Thread-ThreadPoolExecutor-0_3] Pre-matching filter removed 135 side-stub point(s) from shape_id=68007107
-[2026-07-26 09:56:16] [INFO] [Thread-ThreadPoolExecutor-0_0] Pre-matching filter removed 134 side-stub point(s) from shape_id=68009370
-[2026-07-26 09:56:16] [INFO] [Thread-ThreadPoolExecutor-0_3] Successfully processed shape_id=68007107 | distance=21733.1m | confidence=[0.9843] | segments=1 | osm_nodes=1059
-[2026-07-26 09:56:16] [INFO] [Thread-ThreadPoolExecutor-0_0] Successfully processed shape_id=68009370 | distance=23791.8m | confidence=[0.9826] | segments=1 | osm_nodes=1077
-[2026-07-26 09:56:16] [INFO] [Thread-ThreadPoolExecutor-0_10] Pre-matching filter removed 85 side-stub point(s) from shape_id=68010916
-[2026-07-26 09:56:16] [INFO] [Thread-ThreadPoolExecutor-0_10] Successfully processed shape_id=68010916 | distance=10492.9m | confidence=[0.9839] | segments=1 | osm_nodes=523
-[2026-07-26 09:56:17] [INFO] [Thread-ThreadPoolExecutor-0_7] Pre-matching filter removed 191 side-stub point(s) from shape_id=68004680
-[2026-07-26 09:56:17] [INFO] [Thread-ThreadPoolExecutor-0_7] Successfully processed shape_id=68004680 | distance=27766.0m | confidence=[0.9834] | segments=1 | osm_nodes=1348
-[2026-07-26 09:56:17] [INFO] [Thread-ThreadPoolExecutor-0_4] Pre-matching filter removed 90 side-stub point(s) from shape_id=68018414
-[2026-07-26 09:56:17] [INFO] [Thread-ThreadPoolExecutor-0_4] Successfully processed shape_id=68018414 | distance=21634.1m | confidence=[0.9824] | segments=1 | osm_nodes=1132
-[2026-07-26 09:56:18] [INFO] [Thread-ThreadPoolExecutor-0_6] Pre-matching filter removed 105 side-stub point(s) from shape_id=68018415
-[2026-07-26 09:56:18] [INFO] [Thread-ThreadPoolExecutor-0_6] Successfully processed shape_id=68018415 | distance=22565.1m | confidence=[0.9842] | segments=1 | osm_nodes=1133
-[2026-07-26 09:56:18] [INFO] [Thread-ThreadPoolExecutor-0_3] Pre-matching filter removed 54 side-stub point(s) from shape_id=68029277
-[2026-07-26 09:56:18] [INFO] [Thread-ThreadPoolExecutor-0_3] Successfully processed shape_id=68029277 | distance=16499.2m | confidence=[0.9853] | segments=1 | osm_nodes=735
-[2026-07-26 09:56:18] [INFO] [Thread-ThreadPoolExecutor-0_9] Pre-matching filter removed 163 side-stub point(s) from shape_id=68009372
-[2026-07-26 09:56:18] [INFO] [Thread-ThreadPoolExecutor-0_8] Pre-matching filter removed 129 side-stub point(s) from shape_id=68014134
-[2026-07-26 09:56:19] [INFO] [Thread-ThreadPoolExecutor-0_9] Successfully processed shape_id=68009372 | distance=28171.8m | confidence=[0.9826] | segments=1 | osm_nodes=1309
-[2026-07-26 09:56:19] [INFO] [Thread-ThreadPoolExecutor-0_8] Successfully processed shape_id=68014134 | distance=20270.3m | confidence=[0.9571] | segments=1 | osm_nodes=904
-[2026-07-26 09:56:19] [INFO] [Thread-ThreadPoolExecutor-0_0] Pre-matching filter removed 67 side-stub point(s) from shape_id=68029278
-[2026-07-26 09:56:19] [INFO] [Thread-ThreadPoolExecutor-0_11] Pre-matching filter removed 153 side-stub point(s) from shape_id=68009794
-[2026-07-26 09:56:19] [INFO] [Thread-ThreadPoolExecutor-0_0] Successfully processed shape_id=68029278 | distance=16436.9m | confidence=[0, 0.9853] | segments=2 | osm_nodes=715
-[2026-07-26 09:56:19] [INFO] [Thread-ThreadPoolExecutor-0_1] Pre-matching filter removed 196 side-stub point(s) from shape_id=68009371
-[2026-07-26 09:56:19] [INFO] [Thread-ThreadPoolExecutor-0_11] Successfully processed shape_id=68009794 | distance=24467.0m | confidence=[0.9821] | segments=1 | osm_nodes=1161
-[2026-07-26 09:56:19] [INFO] [Thread-ThreadPoolExecutor-0_12] Pre-matching filter removed 166 side-stub point(s) from shape_id=68009717
-[2026-07-26 09:56:19] [INFO] [Thread-ThreadPoolExecutor-0_1] Successfully processed shape_id=68009371 | distance=31462.4m | confidence=[0.9836] | segments=1 | osm_nodes=1485
-[2026-07-26 09:56:19] [INFO] [Thread-ThreadPoolExecutor-0_13] Pre-matching filter removed 94 side-stub point(s) from shape_id=68019369
-[2026-07-26 09:56:19] [INFO] [Thread-ThreadPoolExecutor-0_12] Successfully processed shape_id=68009717 | distance=28455.1m | confidence=[0.9825] | segments=1 | osm_nodes=1308
-[2026-07-26 09:56:19] [INFO] [Thread-ThreadPoolExecutor-0_13] Successfully processed shape_id=68019369 | distance=10014.6m | confidence=[0.9847] | segments=1 | osm_nodes=527
-[2026-07-26 09:56:19] [INFO] [Thread-ThreadPoolExecutor-0_5] Pre-matching filter removed 180 side-stub point(s) from shape_id=68009375
-[2026-07-26 09:56:19] [INFO] [Thread-ThreadPoolExecutor-0_15] Pre-matching filter removed 91 side-stub point(s) from shape_id=68028325
-[2026-07-26 09:56:19] [INFO] [Thread-ThreadPoolExecutor-0_5] Successfully processed shape_id=68009375 | distance=30273.2m | confidence=[0.9824] | segments=1 | osm_nodes=1361
-[2026-07-26 09:56:19] [INFO] [Thread-ThreadPoolExecutor-0_15] Successfully processed shape_id=68028325 | distance=10931.1m | confidence=[0.9806] | segments=1 | osm_nodes=573
-[2026-07-26 09:56:19] [INFO] [Thread-ThreadPoolExecutor-0_2] Pre-matching filter removed 101 side-stub point(s) from shape_id=68028322
-[2026-07-26 09:56:19] [INFO] [Thread-ThreadPoolExecutor-0_14] Pre-matching filter removed 184 side-stub point(s) from shape_id=68009373
-[2026-07-26 09:56:19] [INFO] [Thread-ThreadPoolExecutor-0_2] Successfully processed shape_id=68028322 | distance=11023.1m | confidence=[0.9858] | segments=1 | osm_nodes=554
-[2026-07-26 09:56:19] [INFO] [Thread-ThreadPoolExecutor-0_14] Successfully processed shape_id=68009373 | distance=27597.8m | confidence=[0.982] | segments=1 | osm_nodes=1324
-[2026-07-26 09:56:19] [INFO] [Thread-ThreadPoolExecutor-0_10] Pre-matching filter removed 106 side-stub point(s) from shape_id=68029285
-[2026-07-26 09:56:19] [INFO] [Thread-ThreadPoolExecutor-0_10] Successfully processed shape_id=68029285 | distance=11197.7m | confidence=[0.9817] | segments=1 | osm_nodes=574
-[2026-07-26 09:56:19] [INFO] [Thread-ThreadPoolExecutor-0_7] Pre-matching filter removed 110 side-stub point(s) from shape_id=68029286
-[2026-07-26 09:56:19] [INFO] [Thread-ThreadPoolExecutor-0_7] Successfully processed shape_id=68029286 | distance=11631.1m | confidence=[0.9816] | segments=1 | osm_nodes=605
-[2026-07-26 09:56:19] [INFO] [Thread-MainThread] Processing complete. 120 shapes succeeded, 0 failed.
-[2026-07-26 09:56:19] [INFO] [Thread-MainThread] Exporting GeoJSON to output_shapes.geojson...
-[2026-07-26 09:56:21] [INFO] [Thread-MainThread] Successfully wrote cleaned shapes and route mapping to output_shapes.geojson. Debug log written to execution_debug.log.
+[2026-07-26 09:34:05] [INFO] [Thread-MainThread] Parsing shapes from http://localhost:4000/gtfs.zip...
+[2026-07-26 09:34:08] [INFO] [Thread-MainThread] Found 120 unique shapes for bus routes.
+[2026-07-26 09:34:08] [INFO] [Thread-MainThread] Starting map matching using 16 parallel worker thread(s) (Snap Radius: 15.0m)...
+[2026-07-26 09:34:08] [INFO] [Thread-ThreadPoolExecutor-0_11] Pre-matching filter removed 42 side-stub point(s) from shape_id=67901604
+[2026-07-26 09:34:08] [INFO] [Thread-ThreadPoolExecutor-0_14] Pre-matching filter removed 47 side-stub point(s) from shape_id=67901627
+[2026-07-26 09:34:09] [INFO] [Thread-ThreadPoolExecutor-0_14] Successfully processed shape_id=67901627
+[2026-07-26 09:34:09] [INFO] [Thread-ThreadPoolExecutor-0_11] Successfully processed shape_id=67901604
+[2026-07-26 09:34:09] [INFO] [Thread-ThreadPoolExecutor-0_10] Pre-matching filter removed 64 side-stub point(s) from shape_id=67901603
+[2026-07-26 09:34:09] [INFO] [Thread-ThreadPoolExecutor-0_7] Pre-matching filter removed 66 side-stub point(s) from shape_id=67901597
+[2026-07-26 09:34:09] [INFO] [Thread-ThreadPoolExecutor-0_10] Successfully processed shape_id=67901603
+[2026-07-26 09:34:10] [INFO] [Thread-ThreadPoolExecutor-0_1] Pre-matching filter removed 72 side-stub point(s) from shape_id=67900420
+[2026-07-26 09:34:10] [INFO] [Thread-ThreadPoolExecutor-0_7] Successfully processed shape_id=67901597
+[2026-07-26 09:34:10] [INFO] [Thread-ThreadPoolExecutor-0_1] Successfully processed shape_id=67900420
+[2026-07-26 09:34:10] [INFO] [Thread-ThreadPoolExecutor-0_4] Pre-matching filter removed 79 side-stub point(s) from shape_id=67901054
+[2026-07-26 09:34:10] [INFO] [Thread-ThreadPoolExecutor-0_4] Successfully processed shape_id=67901054
+[2026-07-26 09:34:10] [INFO] [Thread-ThreadPoolExecutor-0_4] Pre-matching filter removed 27 side-stub point(s) from shape_id=67903634
+[2026-07-26 09:34:10] [INFO] [Thread-ThreadPoolExecutor-0_12] Pre-matching filter removed 95 side-stub point(s) from shape_id=67901611
+[2026-07-26 09:34:11] [INFO] [Thread-ThreadPoolExecutor-0_0] Pre-matching filter removed 103 side-stub point(s) from shape_id=67900246
+[2026-07-26 09:34:11] [INFO] [Thread-ThreadPoolExecutor-0_12] Successfully processed shape_id=67901611
+[2026-07-26 09:34:11] [INFO] [Thread-ThreadPoolExecutor-0_12] Pre-matching filter removed 28 side-stub point(s) from shape_id=67903637
+[2026-07-26 09:34:11] [INFO] [Thread-ThreadPoolExecutor-0_14] Pre-matching filter removed 60 side-stub point(s) from shape_id=67901748
+[2026-07-26 09:34:11] [INFO] [Thread-ThreadPoolExecutor-0_4] Successfully processed shape_id=67903634
+[2026-07-26 09:34:11] [INFO] [Thread-ThreadPoolExecutor-0_0] Successfully processed shape_id=67900246
+[2026-07-26 09:34:11] [INFO] [Thread-ThreadPoolExecutor-0_11] Pre-matching filter removed 61 side-stub point(s) from shape_id=67901763
+[2026-07-26 09:34:11] [INFO] [Thread-ThreadPoolExecutor-0_8] Pre-matching filter removed 109 side-stub point(s) from shape_id=67901598
+[2026-07-26 09:34:11] [INFO] [Thread-ThreadPoolExecutor-0_15] Pre-matching filter removed 108 side-stub point(s) from shape_id=67901628
+[2026-07-26 09:34:11] [INFO] [Thread-ThreadPoolExecutor-0_14] Successfully processed shape_id=67901748
+[2026-07-26 09:34:11] [INFO] [Thread-ThreadPoolExecutor-0_11] Successfully processed shape_id=67901763
+[2026-07-26 09:34:11] [INFO] [Thread-ThreadPoolExecutor-0_8] Successfully processed shape_id=67901598
+[2026-07-26 09:34:11] [INFO] [Thread-ThreadPoolExecutor-0_15] Successfully processed shape_id=67901628
+[2026-07-26 09:34:11] [INFO] [Thread-ThreadPoolExecutor-0_12] Successfully processed shape_id=67903637
+[2026-07-26 09:34:12] [INFO] [Thread-ThreadPoolExecutor-0_10] Pre-matching filter removed 73 side-stub point(s) from shape_id=67902673
+[2026-07-26 09:34:12] [INFO] [Thread-ThreadPoolExecutor-0_10] Successfully processed shape_id=67902673
+[2026-07-26 09:34:12] [INFO] [Thread-ThreadPoolExecutor-0_10] Pre-matching filter removed 27 side-stub point(s) from shape_id=67904601
+[2026-07-26 09:34:12] [INFO] [Thread-ThreadPoolExecutor-0_10] Successfully processed shape_id=67904601
+[2026-07-26 09:34:13] [INFO] [Thread-ThreadPoolExecutor-0_13] Pre-matching filter removed 156 side-stub point(s) from shape_id=67901612
+[2026-07-26 09:34:13] [INFO] [Thread-ThreadPoolExecutor-0_13] Successfully processed shape_id=67901612
+[2026-07-26 09:34:13] [INFO] [Thread-ThreadPoolExecutor-0_9] Pre-matching filter removed 168 side-stub point(s) from shape_id=67901599
+[2026-07-26 09:34:13] [INFO] [Thread-ThreadPoolExecutor-0_6] Pre-matching filter removed 158 side-stub point(s) from shape_id=67901180
+[2026-07-26 09:34:13] [INFO] [Thread-ThreadPoolExecutor-0_5] Pre-matching filter removed 169 side-stub point(s) from shape_id=67901178
+[2026-07-26 09:34:13] [INFO] [Thread-ThreadPoolExecutor-0_8] Pre-matching filter removed 66 side-stub point(s) from shape_id=67904355
+[2026-07-26 09:34:13] [INFO] [Thread-ThreadPoolExecutor-0_9] Successfully processed shape_id=67901599
+[2026-07-26 09:34:14] [INFO] [Thread-ThreadPoolExecutor-0_8] Successfully processed shape_id=67904355
+[2026-07-26 09:34:14] [INFO] [Thread-ThreadPoolExecutor-0_8] Pre-matching filter removed 43 side-stub point(s) from shape_id=67906492
+[2026-07-26 09:34:14] [INFO] [Thread-ThreadPoolExecutor-0_6] Successfully processed shape_id=67901180
+[2026-07-26 09:34:14] [INFO] [Thread-ThreadPoolExecutor-0_5] Successfully processed shape_id=67901178
+[2026-07-26 09:34:14] [INFO] [Thread-ThreadPoolExecutor-0_4] Pre-matching filter removed 91 side-stub point(s) from shape_id=67903929
+[2026-07-26 09:34:14] [INFO] [Thread-ThreadPoolExecutor-0_2] Pre-matching filter removed 185 side-stub point(s) from shape_id=67900582
+[2026-07-26 09:34:14] [INFO] [Thread-ThreadPoolExecutor-0_4] Successfully processed shape_id=67903929
+[2026-07-26 09:34:14] [INFO] [Thread-ThreadPoolExecutor-0_8] Successfully processed shape_id=67906492
+[2026-07-26 09:34:14] [INFO] [Thread-ThreadPoolExecutor-0_14] Pre-matching filter removed 99 side-stub point(s) from shape_id=67903935
+[2026-07-26 09:34:14] [INFO] [Thread-ThreadPoolExecutor-0_2] Successfully processed shape_id=67900582
+[2026-07-26 09:34:14] [INFO] [Thread-ThreadPoolExecutor-0_2] Pre-matching filter removed 7 side-stub point(s) from shape_id=67906982
+[2026-07-26 09:34:15] [INFO] [Thread-ThreadPoolExecutor-0_14] Successfully processed shape_id=67903935
+[2026-07-26 09:34:15] [INFO] [Thread-ThreadPoolExecutor-0_0] Pre-matching filter removed 103 side-stub point(s) from shape_id=67903932
+[2026-07-26 09:34:15] [INFO] [Thread-ThreadPoolExecutor-0_15] Pre-matching filter removed 95 side-stub point(s) from shape_id=67904357
+[2026-07-26 09:34:15] [INFO] [Thread-ThreadPoolExecutor-0_3] Pre-matching filter removed 197 side-stub point(s) from shape_id=67900593
+[2026-07-26 09:34:15] [INFO] [Thread-ThreadPoolExecutor-0_15] Successfully processed shape_id=67904357
+[2026-07-26 09:34:15] [INFO] [Thread-ThreadPoolExecutor-0_2] Successfully processed shape_id=67906982
+[2026-07-26 09:34:15] [INFO] [Thread-ThreadPoolExecutor-0_0] Successfully processed shape_id=67903932
+[2026-07-26 09:34:15] [INFO] [Thread-ThreadPoolExecutor-0_11] Pre-matching filter removed 106 side-stub point(s) from shape_id=67903936
+[2026-07-26 09:34:15] [INFO] [Thread-ThreadPoolExecutor-0_12] Pre-matching filter removed 103 side-stub point(s) from shape_id=67904561
+[2026-07-26 09:34:15] [INFO] [Thread-ThreadPoolExecutor-0_13] Pre-matching filter removed 54 side-stub point(s) from shape_id=67905422
+[2026-07-26 09:34:15] [INFO] [Thread-ThreadPoolExecutor-0_13] Successfully processed shape_id=67905422
+[2026-07-26 09:34:15] [INFO] [Thread-ThreadPoolExecutor-0_12] Successfully processed shape_id=67904561
+[2026-07-26 09:34:15] [INFO] [Thread-ThreadPoolExecutor-0_3] Successfully processed shape_id=67900593
+[2026-07-26 09:34:15] [INFO] [Thread-ThreadPoolExecutor-0_11] Successfully processed shape_id=67903936
+[2026-07-26 09:34:15] [INFO] [Thread-ThreadPoolExecutor-0_1] Pre-matching filter removed 171 side-stub point(s) from shape_id=67903501
+[2026-07-26 09:34:15] [INFO] [Thread-ThreadPoolExecutor-0_7] Pre-matching filter removed 169 side-stub point(s) from shape_id=67903498
+[2026-07-26 09:34:16] [INFO] [Thread-ThreadPoolExecutor-0_7] Successfully processed shape_id=67903498
+[2026-07-26 09:34:16] [INFO] [Thread-ThreadPoolExecutor-0_1] Successfully processed shape_id=67903501
+[2026-07-26 09:34:16] [INFO] [Thread-ThreadPoolExecutor-0_9] Pre-matching filter removed 85 side-stub point(s) from shape_id=67905725
+[2026-07-26 09:34:16] [INFO] [Thread-ThreadPoolExecutor-0_5] Pre-matching filter removed 81 side-stub point(s) from shape_id=67906661
+[2026-07-26 09:34:16] [INFO] [Thread-ThreadPoolExecutor-0_9] Successfully processed shape_id=67905725
+[2026-07-26 09:34:16] [INFO] [Thread-ThreadPoolExecutor-0_4] Pre-matching filter removed 79 side-stub point(s) from shape_id=67906662
+[2026-07-26 09:34:16] [INFO] [Thread-ThreadPoolExecutor-0_5] Successfully processed shape_id=67906661
+[2026-07-26 09:34:17] [INFO] [Thread-ThreadPoolExecutor-0_4] Successfully processed shape_id=67906662
+[2026-07-26 09:34:18] [INFO] [Thread-ThreadPoolExecutor-0_9] Pre-matching filter removed 48 side-stub point(s) from shape_id=67918413
+[2026-07-26 09:34:18] [INFO] [Thread-ThreadPoolExecutor-0_6] Pre-matching filter removed 137 side-stub point(s) from shape_id=67906658
+[2026-07-26 09:34:18] [INFO] [Thread-ThreadPoolExecutor-0_9] Successfully processed shape_id=67918413
+[2026-07-26 09:34:18] [INFO] [Thread-ThreadPoolExecutor-0_6] Successfully processed shape_id=67906658
+[2026-07-26 09:34:19] [INFO] [Thread-ThreadPoolExecutor-0_8] Pre-matching filter removed 131 side-stub point(s) from shape_id=67906665
+[2026-07-26 09:34:19] [INFO] [Thread-ThreadPoolExecutor-0_8] Successfully processed shape_id=67906665
+[2026-07-26 09:34:19] [INFO] [Thread-ThreadPoolExecutor-0_14] Pre-matching filter removed 125 side-stub point(s) from shape_id=67907107
+[2026-07-26 09:34:19] [INFO] [Thread-ThreadPoolExecutor-0_7] Pre-matching filter removed 85 side-stub point(s) from shape_id=67910916
+[2026-07-26 09:34:19] [INFO] [Thread-ThreadPoolExecutor-0_7] Successfully processed shape_id=67910916
+[2026-07-26 09:34:20] [INFO] [Thread-ThreadPoolExecutor-0_10] Pre-matching filter removed 191 side-stub point(s) from shape_id=67904680
+[2026-07-26 09:34:20] [INFO] [Thread-ThreadPoolExecutor-0_14] Successfully processed shape_id=67907107
+[2026-07-26 09:34:20] [INFO] [Thread-ThreadPoolExecutor-0_15] Pre-matching filter removed 134 side-stub point(s) from shape_id=67909370
+[2026-07-26 09:34:20] [INFO] [Thread-ThreadPoolExecutor-0_10] Successfully processed shape_id=67904680
+[2026-07-26 09:34:20] [INFO] [Thread-ThreadPoolExecutor-0_15] Successfully processed shape_id=67909370
+[2026-07-26 09:34:20] [INFO] [Thread-ThreadPoolExecutor-0_5] Pre-matching filter removed 90 side-stub point(s) from shape_id=67918414
+[2026-07-26 09:34:21] [INFO] [Thread-ThreadPoolExecutor-0_5] Successfully processed shape_id=67918414
+[2026-07-26 09:34:21] [INFO] [Thread-ThreadPoolExecutor-0_11] Pre-matching filter removed 153 side-stub point(s) from shape_id=67909794
+[2026-07-26 09:34:21] [INFO] [Thread-ThreadPoolExecutor-0_1] Pre-matching filter removed 129 side-stub point(s) from shape_id=67914134
+[2026-07-26 09:34:21] [INFO] [Thread-ThreadPoolExecutor-0_0] Pre-matching filter removed 163 side-stub point(s) from shape_id=67909372
+[2026-07-26 09:34:21] [INFO] [Thread-ThreadPoolExecutor-0_4] Pre-matching filter removed 105 side-stub point(s) from shape_id=67918415
+[2026-07-26 09:34:21] [INFO] [Thread-ThreadPoolExecutor-0_11] Successfully processed shape_id=67909794
+[2026-07-26 09:34:21] [INFO] [Thread-ThreadPoolExecutor-0_7] Pre-matching filter removed 49 side-stub point(s) from shape_id=67929277
+[2026-07-26 09:34:22] [INFO] [Thread-ThreadPoolExecutor-0_0] Successfully processed shape_id=67909372
+[2026-07-26 09:34:22] [INFO] [Thread-ThreadPoolExecutor-0_4] Successfully processed shape_id=67918415
+[2026-07-26 09:34:22] [INFO] [Thread-ThreadPoolExecutor-0_7] Successfully processed shape_id=67929277
+[2026-07-26 09:34:22] [INFO] [Thread-ThreadPoolExecutor-0_3] Pre-matching filter removed 166 side-stub point(s) from shape_id=67909717
+[2026-07-26 09:34:22] [INFO] [Thread-ThreadPoolExecutor-0_1] Successfully processed shape_id=67914134
+[2026-07-26 09:34:22] [INFO] [Thread-ThreadPoolExecutor-0_13] Pre-matching filter removed 184 side-stub point(s) from shape_id=67909373
+[2026-07-26 09:34:22] [INFO] [Thread-ThreadPoolExecutor-0_9] Pre-matching filter removed 94 side-stub point(s) from shape_id=67919369
+[2026-07-26 09:34:22] [INFO] [Thread-ThreadPoolExecutor-0_3] Successfully processed shape_id=67909717
+[2026-07-26 09:34:22] [INFO] [Thread-ThreadPoolExecutor-0_12] Pre-matching filter removed 180 side-stub point(s) from shape_id=67909375
+[2026-07-26 09:34:22] [INFO] [Thread-ThreadPoolExecutor-0_9] Successfully processed shape_id=67919369
+[2026-07-26 09:34:22] [INFO] [Thread-ThreadPoolExecutor-0_14] Pre-matching filter removed 67 side-stub point(s) from shape_id=67929278
+[2026-07-26 09:34:22] [INFO] [Thread-ThreadPoolExecutor-0_2] Pre-matching filter removed 196 side-stub point(s) from shape_id=67909371
+[2026-07-26 09:34:22] [INFO] [Thread-ThreadPoolExecutor-0_13] Successfully processed shape_id=67909373
+[2026-07-26 09:34:23] [INFO] [Thread-ThreadPoolExecutor-0_12] Successfully processed shape_id=67909375
+[2026-07-26 09:34:23] [INFO] [Thread-ThreadPoolExecutor-0_6] Pre-matching filter removed 101 side-stub point(s) from shape_id=67928322
+[2026-07-26 09:34:23] [INFO] [Thread-ThreadPoolExecutor-0_8] Pre-matching filter removed 91 side-stub point(s) from shape_id=67928325
+[2026-07-26 09:34:23] [INFO] [Thread-ThreadPoolExecutor-0_6] Successfully processed shape_id=67928322
+[2026-07-26 09:34:23] [INFO] [Thread-ThreadPoolExecutor-0_2] Successfully processed shape_id=67909371
+[2026-07-26 09:34:23] [INFO] [Thread-ThreadPoolExecutor-0_8] Successfully processed shape_id=67928325
+[2026-07-26 09:34:23] [INFO] [Thread-ThreadPoolExecutor-0_2] Pre-matching filter removed 42 side-stub point(s) from shape_id=68001604
+[2026-07-26 09:34:23] [INFO] [Thread-ThreadPoolExecutor-0_14] Successfully processed shape_id=67929278
+[2026-07-26 09:34:23] [INFO] [Thread-ThreadPoolExecutor-0_10] Pre-matching filter removed 106 side-stub point(s) from shape_id=67929285
+[2026-07-26 09:34:23] [INFO] [Thread-ThreadPoolExecutor-0_11] Pre-matching filter removed 72 side-stub point(s) from shape_id=68000420
+[2026-07-26 09:34:23] [INFO] [Thread-ThreadPoolExecutor-0_11] Successfully processed shape_id=68000420
+[2026-07-26 09:34:24] [INFO] [Thread-ThreadPoolExecutor-0_11] Pre-matching filter removed 47 side-stub point(s) from shape_id=68001627
+[2026-07-26 09:34:24] [INFO] [Thread-ThreadPoolExecutor-0_10] Successfully processed shape_id=67929285
+[2026-07-26 09:34:24] [INFO] [Thread-ThreadPoolExecutor-0_2] Successfully processed shape_id=68001604
+[2026-07-26 09:34:24] [INFO] [Thread-ThreadPoolExecutor-0_15] Pre-matching filter removed 110 side-stub point(s) from shape_id=67929286
+[2026-07-26 09:34:24] [INFO] [Thread-ThreadPoolExecutor-0_7] Pre-matching filter removed 79 side-stub point(s) from shape_id=68001054
+[2026-07-26 09:34:24] [INFO] [Thread-ThreadPoolExecutor-0_9] Pre-matching filter removed 66 side-stub point(s) from shape_id=68001597
+[2026-07-26 09:34:24] [INFO] [Thread-ThreadPoolExecutor-0_15] Successfully processed shape_id=67929286
+[2026-07-26 09:34:24] [INFO] [Thread-ThreadPoolExecutor-0_7] Successfully processed shape_id=68001054
+[2026-07-26 09:34:24] [INFO] [Thread-ThreadPoolExecutor-0_9] Successfully processed shape_id=68001597
+[2026-07-26 09:34:24] [INFO] [Thread-ThreadPoolExecutor-0_5] Pre-matching filter removed 105 side-stub point(s) from shape_id=68000246
+[2026-07-26 09:34:24] [INFO] [Thread-ThreadPoolExecutor-0_11] Successfully processed shape_id=68001627
+[2026-07-26 09:34:24] [INFO] [Thread-ThreadPoolExecutor-0_5] Successfully processed shape_id=68000246
+[2026-07-26 09:34:24] [INFO] [Thread-ThreadPoolExecutor-0_5] Pre-matching filter removed 27 side-stub point(s) from shape_id=68003634
+[2026-07-26 09:34:25] [INFO] [Thread-ThreadPoolExecutor-0_6] Pre-matching filter removed 64 side-stub point(s) from shape_id=68001603
+[2026-07-26 09:34:25] [INFO] [Thread-ThreadPoolExecutor-0_6] Successfully processed shape_id=68001603
+[2026-07-26 09:34:25] [INFO] [Thread-ThreadPoolExecutor-0_6] Pre-matching filter removed 28 side-stub point(s) from shape_id=68003637
+[2026-07-26 09:34:25] [INFO] [Thread-ThreadPoolExecutor-0_5] Successfully processed shape_id=68003634
+[2026-07-26 09:34:25] [INFO] [Thread-ThreadPoolExecutor-0_6] Successfully processed shape_id=68003637
+[2026-07-26 09:34:25] [INFO] [Thread-ThreadPoolExecutor-0_2] Pre-matching filter removed 60 side-stub point(s) from shape_id=68001748
+[2026-07-26 09:34:25] [INFO] [Thread-ThreadPoolExecutor-0_2] Successfully processed shape_id=68001748
+[2026-07-26 09:34:26] [INFO] [Thread-ThreadPoolExecutor-0_8] Pre-matching filter removed 95 side-stub point(s) from shape_id=68001611
+[2026-07-26 09:34:26] [INFO] [Thread-ThreadPoolExecutor-0_13] Pre-matching filter removed 109 side-stub point(s) from shape_id=68001598
+[2026-07-26 09:34:26] [INFO] [Thread-ThreadPoolExecutor-0_15] Pre-matching filter removed 61 side-stub point(s) from shape_id=68001763
+[2026-07-26 09:34:26] [INFO] [Thread-ThreadPoolExecutor-0_15] Successfully processed shape_id=68001763
+[2026-07-26 09:34:26] [INFO] [Thread-ThreadPoolExecutor-0_8] Successfully processed shape_id=68001611
+[2026-07-26 09:34:26] [INFO] [Thread-ThreadPoolExecutor-0_13] Successfully processed shape_id=68001598
+[2026-07-26 09:34:26] [INFO] [Thread-ThreadPoolExecutor-0_7] Pre-matching filter removed 73 side-stub point(s) from shape_id=68002673
+[2026-07-26 09:34:27] [INFO] [Thread-ThreadPoolExecutor-0_7] Successfully processed shape_id=68002673
+[2026-07-26 09:34:27] [INFO] [Thread-ThreadPoolExecutor-0_10] Pre-matching filter removed 108 side-stub point(s) from shape_id=68001628
+[2026-07-26 09:34:27] [INFO] [Thread-ThreadPoolExecutor-0_3] Pre-matching filter removed 158 side-stub point(s) from shape_id=68001180
+[2026-07-26 09:34:27] [INFO] [Thread-ThreadPoolExecutor-0_1] Pre-matching filter removed 169 side-stub point(s) from shape_id=68001178
+[2026-07-26 09:34:27] [INFO] [Thread-ThreadPoolExecutor-0_10] Successfully processed shape_id=68001628
+[2026-07-26 09:34:27] [INFO] [Thread-ThreadPoolExecutor-0_10] Pre-matching filter removed 27 side-stub point(s) from shape_id=68004601
+[2026-07-26 09:34:28] [INFO] [Thread-ThreadPoolExecutor-0_12] Pre-matching filter removed 168 side-stub point(s) from shape_id=68001599
+[2026-07-26 09:34:28] [INFO] [Thread-ThreadPoolExecutor-0_0] Pre-matching filter removed 185 side-stub point(s) from shape_id=68000582
+[2026-07-26 09:34:28] [INFO] [Thread-ThreadPoolExecutor-0_3] Successfully processed shape_id=68001180
+[2026-07-26 09:34:28] [INFO] [Thread-ThreadPoolExecutor-0_10] Successfully processed shape_id=68004601
+[2026-07-26 09:34:28] [INFO] [Thread-ThreadPoolExecutor-0_1] Successfully processed shape_id=68001178
+[2026-07-26 09:34:28] [INFO] [Thread-ThreadPoolExecutor-0_14] Pre-matching filter removed 156 side-stub point(s) from shape_id=68001612
+[2026-07-26 09:34:28] [INFO] [Thread-ThreadPoolExecutor-0_12] Successfully processed shape_id=68001599
+[2026-07-26 09:34:28] [INFO] [Thread-ThreadPoolExecutor-0_12] Pre-matching filter removed 43 side-stub point(s) from shape_id=68006492
+[2026-07-26 09:34:28] [INFO] [Thread-ThreadPoolExecutor-0_0] Successfully processed shape_id=68000582
+[2026-07-26 09:34:28] [INFO] [Thread-ThreadPoolExecutor-0_4] Pre-matching filter removed 197 side-stub point(s) from shape_id=68000593
+[2026-07-26 09:34:28] [INFO] [Thread-ThreadPoolExecutor-0_5] Pre-matching filter removed 93 side-stub point(s) from shape_id=68003929
+[2026-07-26 09:34:28] [INFO] [Thread-ThreadPoolExecutor-0_8] Pre-matching filter removed 66 side-stub point(s) from shape_id=68004355
+[2026-07-26 09:34:28] [INFO] [Thread-ThreadPoolExecutor-0_5] Successfully processed shape_id=68003929
+[2026-07-26 09:34:28] [INFO] [Thread-ThreadPoolExecutor-0_14] Successfully processed shape_id=68001612
+[2026-07-26 09:34:29] [INFO] [Thread-ThreadPoolExecutor-0_8] Successfully processed shape_id=68004355
+[2026-07-26 09:34:29] [INFO] [Thread-ThreadPoolExecutor-0_4] Successfully processed shape_id=68000593
+[2026-07-26 09:34:29] [INFO] [Thread-ThreadPoolExecutor-0_4] Pre-matching filter removed 7 side-stub point(s) from shape_id=68006982
+[2026-07-26 09:34:29] [INFO] [Thread-ThreadPoolExecutor-0_12] Successfully processed shape_id=68006492
+[2026-07-26 09:34:29] [INFO] [Thread-ThreadPoolExecutor-0_2] Pre-matching filter removed 101 side-stub point(s) from shape_id=68003935
+[2026-07-26 09:34:29] [INFO] [Thread-ThreadPoolExecutor-0_6] Pre-matching filter removed 105 side-stub point(s) from shape_id=68003932
+[2026-07-26 09:34:29] [INFO] [Thread-ThreadPoolExecutor-0_4] Successfully processed shape_id=68006982
+[2026-07-26 09:34:29] [INFO] [Thread-ThreadPoolExecutor-0_2] Successfully processed shape_id=68003935
+[2026-07-26 09:34:29] [INFO] [Thread-ThreadPoolExecutor-0_13] Pre-matching filter removed 95 side-stub point(s) from shape_id=68004357
+[2026-07-26 09:34:29] [INFO] [Thread-ThreadPoolExecutor-0_6] Successfully processed shape_id=68003932
+[2026-07-26 09:34:29] [INFO] [Thread-ThreadPoolExecutor-0_13] Successfully processed shape_id=68004357
+[2026-07-26 09:34:29] [INFO] [Thread-ThreadPoolExecutor-0_10] Pre-matching filter removed 56 side-stub point(s) from shape_id=68005422
+[2026-07-26 09:34:29] [INFO] [Thread-ThreadPoolExecutor-0_15] Pre-matching filter removed 108 side-stub point(s) from shape_id=68003936
+[2026-07-26 09:34:30] [INFO] [Thread-ThreadPoolExecutor-0_10] Successfully processed shape_id=68005422
+[2026-07-26 09:34:30] [INFO] [Thread-ThreadPoolExecutor-0_15] Successfully processed shape_id=68003936
+[2026-07-26 09:34:30] [INFO] [Thread-ThreadPoolExecutor-0_9] Pre-matching filter removed 169 side-stub point(s) from shape_id=68003498
+[2026-07-26 09:34:30] [INFO] [Thread-ThreadPoolExecutor-0_7] Pre-matching filter removed 103 side-stub point(s) from shape_id=68004561
+[2026-07-26 09:34:30] [INFO] [Thread-ThreadPoolExecutor-0_7] Successfully processed shape_id=68004561
+[2026-07-26 09:34:30] [INFO] [Thread-ThreadPoolExecutor-0_9] Successfully processed shape_id=68003498
+[2026-07-26 09:34:30] [INFO] [Thread-ThreadPoolExecutor-0_11] Pre-matching filter removed 171 side-stub point(s) from shape_id=68003501
+[2026-07-26 09:34:30] [INFO] [Thread-ThreadPoolExecutor-0_1] Pre-matching filter removed 85 side-stub point(s) from shape_id=68005725
+[2026-07-26 09:34:30] [INFO] [Thread-ThreadPoolExecutor-0_11] Successfully processed shape_id=68003501
+[2026-07-26 09:34:31] [INFO] [Thread-ThreadPoolExecutor-0_1] Successfully processed shape_id=68005725
+[2026-07-26 09:34:31] [INFO] [Thread-ThreadPoolExecutor-0_14] Pre-matching filter removed 79 side-stub point(s) from shape_id=68006662
+[2026-07-26 09:34:31] [INFO] [Thread-ThreadPoolExecutor-0_5] Pre-matching filter removed 81 side-stub point(s) from shape_id=68006661
+[2026-07-26 09:34:31] [INFO] [Thread-ThreadPoolExecutor-0_14] Successfully processed shape_id=68006662
+[2026-07-26 09:34:31] [INFO] [Thread-ThreadPoolExecutor-0_5] Successfully processed shape_id=68006661
+[2026-07-26 09:34:32] [INFO] [Thread-ThreadPoolExecutor-0_1] Pre-matching filter removed 48 side-stub point(s) from shape_id=68018413
+[2026-07-26 09:34:32] [INFO] [Thread-ThreadPoolExecutor-0_1] Successfully processed shape_id=68018413
+[2026-07-26 09:34:33] [INFO] [Thread-ThreadPoolExecutor-0_8] Pre-matching filter removed 131 side-stub point(s) from shape_id=68006665
+[2026-07-26 09:34:33] [INFO] [Thread-ThreadPoolExecutor-0_0] Pre-matching filter removed 137 side-stub point(s) from shape_id=68006658
+[2026-07-26 09:34:33] [INFO] [Thread-ThreadPoolExecutor-0_9] Pre-matching filter removed 85 side-stub point(s) from shape_id=68010916
+[2026-07-26 09:34:33] [INFO] [Thread-ThreadPoolExecutor-0_8] Successfully processed shape_id=68006665
+[2026-07-26 09:34:33] [INFO] [Thread-ThreadPoolExecutor-0_9] Successfully processed shape_id=68010916
+[2026-07-26 09:34:33] [INFO] [Thread-ThreadPoolExecutor-0_0] Successfully processed shape_id=68006658
+[2026-07-26 09:34:34] [INFO] [Thread-ThreadPoolExecutor-0_12] Pre-matching filter removed 135 side-stub point(s) from shape_id=68007107
+[2026-07-26 09:34:34] [INFO] [Thread-ThreadPoolExecutor-0_4] Pre-matching filter removed 134 side-stub point(s) from shape_id=68009370
+[2026-07-26 09:34:34] [INFO] [Thread-ThreadPoolExecutor-0_4] Successfully processed shape_id=68009370
+[2026-07-26 09:34:34] [INFO] [Thread-ThreadPoolExecutor-0_12] Successfully processed shape_id=68007107
+[2026-07-26 09:34:34] [INFO] [Thread-ThreadPoolExecutor-0_14] Pre-matching filter removed 90 side-stub point(s) from shape_id=68018414
+[2026-07-26 09:34:35] [INFO] [Thread-ThreadPoolExecutor-0_14] Successfully processed shape_id=68018414
+[2026-07-26 09:34:35] [INFO] [Thread-ThreadPoolExecutor-0_3] Pre-matching filter removed 191 side-stub point(s) from shape_id=68004680
+[2026-07-26 09:34:35] [INFO] [Thread-ThreadPoolExecutor-0_0] Pre-matching filter removed 54 side-stub point(s) from shape_id=68029277
+[2026-07-26 09:34:35] [INFO] [Thread-ThreadPoolExecutor-0_3] Successfully processed shape_id=68004680
+[2026-07-26 09:34:35] [INFO] [Thread-ThreadPoolExecutor-0_6] Pre-matching filter removed 163 side-stub point(s) from shape_id=68009372
+[2026-07-26 09:34:36] [INFO] [Thread-ThreadPoolExecutor-0_0] Successfully processed shape_id=68029277
+[2026-07-26 09:34:36] [INFO] [Thread-ThreadPoolExecutor-0_5] Pre-matching filter removed 105 side-stub point(s) from shape_id=68018415
+[2026-07-26 09:34:36] [INFO] [Thread-ThreadPoolExecutor-0_11] Pre-matching filter removed 129 side-stub point(s) from shape_id=68014134
+[2026-07-26 09:34:36] [INFO] [Thread-ThreadPoolExecutor-0_6] Successfully processed shape_id=68009372
+[2026-07-26 09:34:36] [INFO] [Thread-ThreadPoolExecutor-0_5] Successfully processed shape_id=68018415
+[2026-07-26 09:34:36] [INFO] [Thread-ThreadPoolExecutor-0_7] Pre-matching filter removed 153 side-stub point(s) from shape_id=68009794
+[2026-07-26 09:34:36] [INFO] [Thread-ThreadPoolExecutor-0_15] Pre-matching filter removed 166 side-stub point(s) from shape_id=68009717
+[2026-07-26 09:34:36] [INFO] [Thread-ThreadPoolExecutor-0_13] Pre-matching filter removed 184 side-stub point(s) from shape_id=68009373
+[2026-07-26 09:34:36] [INFO] [Thread-ThreadPoolExecutor-0_10] Pre-matching filter removed 180 side-stub point(s) from shape_id=68009375
+[2026-07-26 09:34:36] [INFO] [Thread-ThreadPoolExecutor-0_1] Pre-matching filter removed 94 side-stub point(s) from shape_id=68019369
+[2026-07-26 09:34:36] [INFO] [Thread-ThreadPoolExecutor-0_2] Pre-matching filter removed 196 side-stub point(s) from shape_id=68009371
+[2026-07-26 09:34:36] [INFO] [Thread-ThreadPoolExecutor-0_9] Pre-matching filter removed 91 side-stub point(s) from shape_id=68028325
+[2026-07-26 09:34:36] [INFO] [Thread-ThreadPoolExecutor-0_7] Successfully processed shape_id=68009794
+[2026-07-26 09:34:36] [INFO] [Thread-ThreadPoolExecutor-0_11] Successfully processed shape_id=68014134
+[2026-07-26 09:34:37] [INFO] [Thread-ThreadPoolExecutor-0_1] Successfully processed shape_id=68019369
+[2026-07-26 09:34:37] [INFO] [Thread-ThreadPoolExecutor-0_8] Pre-matching filter removed 101 side-stub point(s) from shape_id=68028322
+[2026-07-26 09:34:37] [INFO] [Thread-ThreadPoolExecutor-0_4] Pre-matching filter removed 67 side-stub point(s) from shape_id=68029278
+[2026-07-26 09:34:37] [INFO] [Thread-ThreadPoolExecutor-0_13] Successfully processed shape_id=68009373
+[2026-07-26 09:34:37] [INFO] [Thread-ThreadPoolExecutor-0_10] Successfully processed shape_id=68009375
+[2026-07-26 09:34:37] [INFO] [Thread-ThreadPoolExecutor-0_15] Successfully processed shape_id=68009717
+[2026-07-26 09:34:37] [INFO] [Thread-ThreadPoolExecutor-0_9] Successfully processed shape_id=68028325
+[2026-07-26 09:34:37] [INFO] [Thread-ThreadPoolExecutor-0_2] Successfully processed shape_id=68009371
+[2026-07-26 09:34:37] [INFO] [Thread-ThreadPoolExecutor-0_12] Pre-matching filter removed 106 side-stub point(s) from shape_id=68029285
+[2026-07-26 09:34:37] [INFO] [Thread-ThreadPoolExecutor-0_14] Pre-matching filter removed 110 side-stub point(s) from shape_id=68029286
+[2026-07-26 09:34:37] [INFO] [Thread-ThreadPoolExecutor-0_8] Successfully processed shape_id=68028322
+[2026-07-26 09:34:37] [INFO] [Thread-ThreadPoolExecutor-0_4] Successfully processed shape_id=68029278
+[2026-07-26 09:34:37] [INFO] [Thread-ThreadPoolExecutor-0_12] Successfully processed shape_id=68029285
+[2026-07-26 09:34:37] [INFO] [Thread-ThreadPoolExecutor-0_14] Successfully processed shape_id=68029286
+[2026-07-26 09:34:37] [INFO] [Thread-MainThread] Processing complete. 120 shapes succeeded, 0 failed.
+[2026-07-26 09:34:37] [INFO] [Thread-MainThread] Exporting GeoJSON to output_shapes.geojson...
+[2026-07-26 09:34:39] [INFO] [Thread-MainThread] Successfully wrote cleaned shapes and route mapping to output_shapes.geojson. Debug log written to execution_debug.log.
