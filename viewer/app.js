@@ -5,10 +5,10 @@ const map = L.map('map', {
 
 L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-    subdomains: 'abcd',
-    maxZoom: 20
+// Switch to a more informative map tile (standard OSM) for clear street labels
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19
 }).addTo(map);
 
 // Layer Groups
@@ -113,17 +113,17 @@ function renderFeatures(allowedShapeIds) {
         if (status === 'original') {
             style = {
                 color: '#ef4444',
-                weight: 4,
-                opacity: 0.6,
+                weight: 5,
+                opacity: 0.4,
                 dashArray: '5, 5'
             };
             targetLayer = originalLayer;
             originalCount++;
         } else {
             style = {
-                color: '#10b981',
-                weight: 5,
-                opacity: 0.9
+                color: '#2563eb', // Changed to blue to contrast better with light map
+                weight: 6,
+                opacity: 0.5 // More transparent to see street names
             };
             targetLayer = cleanedLayer;
         }
