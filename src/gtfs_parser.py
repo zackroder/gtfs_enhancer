@@ -4,13 +4,14 @@ import os
 import tempfile
 import requests
 
-def parse_shapes(gtfs_path: str) -> tuple[dict[str, pd.DataFrame], dict[str, list[str]]]:
+def parse_shapes(gtfs_path: str, limit_routes: list[str] = None) -> tuple[dict[str, pd.DataFrame], dict[str, list[str]]]:
     """
     Parses GTFS data, filtering shapes to bus routes only (route_type=3),
     and generates a mapping of route names to their shape_ids.
     
     Args:
         gtfs_path: Path to a GTFS .zip file, an extracted GTFS directory, or a URL.
+        limit_routes: Optional list of route short names, long names, or IDs to limit parsing to.
         
     Returns:
         A tuple containing:
@@ -54,6 +55,17 @@ def parse_shapes(gtfs_path: str) -> tuple[dict[str, pd.DataFrame], dict[str, lis
         else:
             print("Warning: routes.txt missing or lacks route_type. Assuming all routes are buses.")
             bus_routes = routes_df
+            
+        if limit_routes and not bus_routes.empty:
+            limit_routes_set = set(str(r).strip() for r in limit_routes)
+            # Filter if route_id, route_short_name, or route_long_name matches any item in limit_routes
+            mask = (
+                bus_routes['route_id'].astype(str).isin(limit_routes_set) |
+                bus_routes['route_short_name'].astype(str).isin(limit_routes_set) |
+                bus_routes['route_long_name'].astype(str).isin(limit_routes_set)
+            )
+            bus_routes = bus_routes[mask]
+            print(f"Debug Mode: Filtered routes down to {len(bus_routes)} matching routes: {limit_routes_set}")
             
         bus_route_ids = set(bus_routes['route_id']) if not bus_routes.empty else set()
         
