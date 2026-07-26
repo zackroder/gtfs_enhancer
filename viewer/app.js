@@ -1,7 +1,8 @@
-// Initialize Map with a dark theme (CartoDB Dark Matter)
+// Initialize Map with Canvas renderer for high-performance point rendering
 const map = L.map('map', {
-    zoomControl: false // Custom position if needed, or hide
-}).setView([37.7749, -122.4194], 12); // Default center, will fitBounds on load
+    preferCanvas: true,
+    zoomControl: false
+}).setView([37.7749, -122.4194], 12);
 
 L.control.zoom({ position: 'bottomright' }).addTo(map);
 
@@ -15,11 +16,13 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r
 // Layer Groups
 const originalLayer = L.layerGroup().addTo(map);
 const cleanedLayer = L.layerGroup().addTo(map);
+const pointsLayer = L.layerGroup().addTo(map);
 
 // DOM Elements
 const fileInput = document.getElementById('geojson-upload');
 const toggleOriginal = document.getElementById('toggle-original');
 const toggleCleaned = document.getElementById('toggle-cleaned');
+const togglePoints = document.getElementById('toggle-points');
 const statTotal = document.getElementById('stat-total-shapes');
 const routeSelector = document.getElementById('route-selector');
 
@@ -54,6 +57,11 @@ toggleOriginal.addEventListener('change', (e) => {
 toggleCleaned.addEventListener('change', (e) => {
     if (e.target.checked) map.addLayer(cleanedLayer);
     else map.removeLayer(cleanedLayer);
+});
+
+togglePoints.addEventListener('change', (e) => {
+    if (e.target.checked) map.addLayer(pointsLayer);
+    else map.removeLayer(pointsLayer);
 });
 
 // Route Selector Handler
@@ -94,6 +102,7 @@ function renderFeatures(allowedShapeIds) {
     // Clear existing layers
     originalLayer.clearLayers();
     cleanedLayer.clearLayers();
+    pointsLayer.clearLayers();
 
     let originalCount = 0;
     const bounds = L.latLngBounds();
@@ -110,6 +119,7 @@ function renderFeatures(allowedShapeIds) {
         
         let style = {};
         let targetLayer = null;
+        let pointColor = '#2563eb';
 
         if (status === 'original') {
             style = {
@@ -119,14 +129,16 @@ function renderFeatures(allowedShapeIds) {
                 dashArray: '5, 5'
             };
             targetLayer = originalLayer;
+            pointColor = '#ef4444';
             originalCount++;
         } else {
             style = {
-                color: '#2563eb', // Changed to blue to contrast better with light map
+                color: '#2563eb',
                 weight: 6,
-                opacity: 0.5 // More transparent to see street names
+                opacity: 0.5
             };
             targetLayer = cleanedLayer;
+            pointColor = '#2563eb';
         }
 
         const layer = L.geoJSON(feature, {
@@ -140,6 +152,55 @@ function renderFeatures(allowedShapeIds) {
         });
 
         layer.addTo(targetLayer);
+        
+        // Render Individual Interactive Trace Points ONLY when a single route is selected and toggle is checked
+        const shouldRenderPoints = allowedShapeIds !== null && togglePoints.checked;
+        if (shouldRenderPoints && feature.geometry && feature.geometry.coordinates) {
+            const coordsList = feature.geometry.type === 'LineString' ? feature.geometry.coordinates : [];
+            
+            coordsList.forEach((coord, idx) => {
+                const lon = coord[0];
+                const lat = coord[1];
+                
+                const marker = L.circleMarker([lat, lon], {
+                    radius: 4,
+                    fillColor: pointColor,
+                    color: '#ffffff',
+                    weight: 1.5,
+                    opacity: 0.9,
+                    fillOpacity: 0.85
+                });
+                
+                const tooltipContent = `
+                    <div style="font-family: Inter, sans-serif; font-size: 12px; line-height: 1.4;">
+                        <strong>Point #${idx + 1}</strong> of ${coordsList.length}<br>
+                        <strong>Shape ID:</strong> ${shapeId}<br>
+                        <strong>Status:</strong> <span style="color:${pointColor}; font-weight:600;">${status}</span><br>
+                        <strong>Lat:</strong> ${lat.toFixed(5)}<br>
+                        <strong>Lon:</strong> ${lon.toFixed(5)}
+                    </div>
+                `;
+                
+                marker.bindTooltip(tooltipContent, {
+                    permanent: false,
+                    direction: 'top',
+                    offset: [0, -4]
+                });
+                
+                // Hover effect: enlarge circle marker
+                marker.on('mouseover', function () {
+                    this.setRadius(7);
+                    this.setStyle({ weight: 2.5, fillOpacity: 1.0 });
+                });
+                
+                marker.on('mouseout', function () {
+                    this.setRadius(4);
+                    this.setStyle({ weight: 1.5, fillOpacity: 0.85 });
+                });
+                
+                marker.addTo(pointsLayer);
+            });
+        }
         
         // Extend bounds
         const layerBounds = layer.getBounds();

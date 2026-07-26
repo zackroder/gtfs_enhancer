@@ -193,8 +193,9 @@ input:checked + .slider::before {
     border-radius: 50%;
 }
 
-.original-dot { background-color: var(--color-original); }
-.cleaned-dot { background-color: var(--color-cleaned); }
+.original-dot { background: #ef4444; }
+.cleaned-dot { background: #2563eb; }
+.points-dot { background: #8b5cf6; }
 
 /* Stats */
 .stats-panel {

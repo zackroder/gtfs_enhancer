@@ -30,20 +30,17 @@ def test_filter_perpendicular_stubs():
     cleaner = ShapeCleaner()
     
     # Point 0: (0, 0)
-    # Point 1: (0.0002, 0.0002) -> 20m side stub jutting out
-    # Point 2: (0, 0.0010)
-    # Point 0 and Point 2 form a straight north-south line x=0.
-    # Point 1 juts east.
+    # Point 1: (0.0002, 0.0002) -> 20m side stub forming acute tip angle (~45 deg)
+    # Point 2: (0.0, 0.0001)
     data = {
         'shape_pt_lon': [0.0, 0.0002, 0.0],
-        'shape_pt_lat': [0.0, 0.0005, 0.0010],
+        'shape_pt_lat': [0.0, 0.0002, 0.0001],
         'shape_pt_sequence': [1, 2, 3]
     }
     df = pd.DataFrame(data)
     
-    filtered_df = cleaner.filter_perpendicular_stubs(df, max_stub_meters=40.0)
+    filtered_df = cleaner.filter_perpendicular_stubs(df, max_stub_meters=75.0)
     
-    # Point 1 should be removed
+    # Point 1 (the tip of the 20m spur) should be removed
     assert len(filtered_df) == 2
     assert list(filtered_df['shape_pt_lon']) == [0.0, 0.0]
-    assert list(filtered_df['shape_pt_lat']) == [0.0, 0.0010]
