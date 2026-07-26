@@ -11,7 +11,7 @@ from src.gtfs_parser import parse_shapes
 from src.map_matcher import OSRMMapMatcher
 from src.shape_cleaner import ShapeCleaner
 
-def process_gtfs_shapes(gtfs_path: str, osrm_url: str, output_path: str, profile: str):
+def process_gtfs_shapes(gtfs_path: str, osrm_url: str, output_path: str, profile: str, max_points: int = 500):
     print(f"Parsing shapes from {gtfs_path}...")
     try:
         shapes, route_mapping = parse_shapes(gtfs_path)
@@ -21,7 +21,7 @@ def process_gtfs_shapes(gtfs_path: str, osrm_url: str, output_path: str, profile
         
     print(f"Found {len(shapes)} unique shapes for bus routes.")
     
-    matcher = OSRMMapMatcher(base_url=osrm_url, profile=profile)
+    matcher = OSRMMapMatcher(base_url=osrm_url, profile=profile, max_points=max_points)
     cleaner = ShapeCleaner()
     
     results = []
@@ -85,6 +85,7 @@ def main():
     parser.add_argument("output", help="Path to output GeoJSON file")
     parser.add_argument("--osrm-url", default="http://localhost:5000", help="OSRM API base URL (default: http://localhost:5000)")
     parser.add_argument("--profile", default="driving", help="OSRM routing profile (e.g., 'driving', 'bus')")
+    parser.add_argument("--max-points", type=int, default=500, help="Maximum trace points per OSRM request before downsampling (default: 500)")
     
     args = parser.parse_args()
     
@@ -93,7 +94,7 @@ def main():
         print(f"Error: Path {args.gtfs_path} does not exist.")
         sys.exit(1)
         
-    process_gtfs_shapes(args.gtfs_path, args.osrm_url, args.output, args.profile)
+    process_gtfs_shapes(args.gtfs_path, args.osrm_url, args.output, args.profile, args.max_points)
 
 if __name__ == "__main__":
     main()

@@ -5,7 +5,7 @@ import urllib.parse
 import json
 
 class OSRMMapMatcher:
-    def __init__(self, base_url: str = "http://localhost:5000", profile: str = "driving", max_points: int = 100):
+    def __init__(self, base_url: str = "http://localhost:5000", profile: str = "driving", max_points: int = 500):
         """
         Initializes the MapMatcher.
         
