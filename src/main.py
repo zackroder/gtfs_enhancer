@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import geopandas as gpd
 from shapely.geometry import LineString
-from src.gtfs_parser import parse_shapes
+from src.gtfs_parser import parse_shapes, parse_stop_usage
 from src.map_matcher import OSRMMapMatcher
 from src.shape_cleaner import ShapeCleaner
 from src.quality import compute_match_metrics, classify_match
@@ -47,13 +47,15 @@ def _feature(shape_id: str, status: str, geometry, **properties) -> dict:
     feature.update(properties)
     return feature
 
-def _process_single_shape(shape_id: str, df, matcher: OSRMMapMatcher, cleaner: ShapeCleaner, logger: logging.Logger, quality_thresholds: dict = None, preprocess_kwargs: dict = None):
+def _process_single_shape(shape_id: str, df, matcher: OSRMMapMatcher, cleaner: ShapeCleaner, logger: logging.Logger, quality_thresholds: dict = None, preprocess_kwargs: dict = None, stops_for_shape: list = None):
     thread_name = current_thread().name
     logger.debug(f"Starting processing for shape {shape_id} with {len(df)} points on thread {thread_name}")
     
     results = []
     try:
-        stages = cleaner.preprocess_shape(df, **(preprocess_kwargs or {}))
+        preprocess_kwargs = dict(preprocess_kwargs or {})
+        preprocess_kwargs["stops"] = stops_for_shape or []
+        stages = cleaner.preprocess_shape(df, **preprocess_kwargs)
 
         if len(stages["original"]) < 2:
             logger.warning(f"Shape {shape_id} has fewer than 2 points; skipping.")
@@ -63,14 +65,9 @@ def _process_single_shape(shape_id: str, df, matcher: OSRMMapMatcher, cleaner: S
         results.append(_feature(shape_id, "original", LineString(stages["original"]), points=len(stages["original"])))
         results.append(_feature(shape_id, "simplified", LineString(stages["simplified"]), points=len(stages["simplified"])))
         results.append(_feature(
-            shape_id, "spike_removed", LineString(stages["spike_removed"]),
-            points=len(stages["spike_removed"]),
-            spikes_removed=len(stages["spikes"]),
-        ))
-        results.append(_feature(
-            shape_id, "detour_removed", LineString(stages["detour_removed"]),
-            points=len(stages["detour_removed"]),
-            detours_removed=len(stages["detours"]),
+            shape_id, "stop_removed", LineString(stages["stop_removed"]),
+            points=len(stages["stop_removed"]),
+            stop_excursions_removed=len(stages["removed_stops"]),
         ))
 
         # Map match the cleaned skeleton
@@ -92,8 +89,8 @@ def _process_single_shape(shape_id: str, df, matcher: OSRMMapMatcher, cleaner: S
 
         logger.info(
             f"shape_id={shape_id} | distance={match.distance_meters}m | confidence={match.confidences} "
-            f"| pts {len(stages['original'])}->{len(stages['simplified'])}->{len(stages['spike_removed'])}->{len(stages['detour_removed'])} "
-            f"| spikes={len(stages['spikes'])} | detours={len(stages['detours'])} | status={quality['status']} | reasons={quality['reasons']}"
+            f"| pts {len(stages['original'])}->{len(stages['simplified'])}->{len(stages['stop_removed'])} "
+            f"| stop_excursions={len(stages['removed_stops'])} | status={quality['status']} | reasons={quality['reasons']}"
         )
 
         results.append(_feature(
@@ -113,13 +110,10 @@ def _process_single_shape(shape_id: str, df, matcher: OSRMMapMatcher, cleaner: S
             matched_length=metrics["matched_length"],
             original_points=len(stages["original"]),
             simplified_points=len(stages["simplified"]),
-            spike_removed_points=len(stages["spike_removed"]),
-            detour_removed_points=len(stages["detour_removed"]),
+            stop_removed_points=len(stages["stop_removed"]),
             matched_points=len(match.geometry.coords),
-            spikes_removed=len(stages["spikes"]),
-            spike_details=stages["spikes"],
-            detours_removed=len(stages["detours"]),
-            detour_details=stages["detours"],
+            stop_excursions_removed=len(stages["removed_stops"]),
+            stop_excursion_details=stages["removed_stops"],
         ))
 
         return shape_id, results, None
@@ -140,6 +134,16 @@ def process_gtfs_shapes(gtfs_path: str, osrm_url: str, output_path: str, profile
         
     logger.info(f"Found {len(shapes)} unique shapes for bus routes.")
     
+    stop_usage = {}
+    try:
+        stop_usage = parse_stop_usage(gtfs_path, limit_routes=routes)
+        if stop_usage:
+            logger.info(f"Parsed stop usage for {len(stop_usage)} shapes.")
+        else:
+            logger.warning("No stop data found; stop-excursion removal disabled for this feed.")
+    except Exception as e:
+        logger.warning(f"Failed to parse stop usage ({e}); stop-excursion removal disabled.")
+
     if limit_shapes and limit_shapes > 0:
         shape_keys = list(shapes.keys())[:limit_shapes]
         shapes = {k: shapes[k] for k in shape_keys}
@@ -161,14 +165,13 @@ def process_gtfs_shapes(gtfs_path: str, osrm_url: str, output_path: str, profile
     logger.info(
         f"Starting map matching using {workers} parallel worker thread(s) "
         f"(Snap Radius: {snap_radius}m | Bearings: {use_bearings} ±{bearing_range}° | "
-        f"RDP: {pp.get('simplify_tolerance_meters', 15.0)}m | Spike: return<={pp.get('spike_max_return_meters', 20.0)}m dev>={pp.get('spike_min_deviation_meters', 15.0)}m | "
-        f"Detour: span<={pp.get('detour_max_span_meters', 100.0)}m dev>={pp.get('detour_min_deviation_meters', 12.0)}m)"
+        f"RDP: {pp.get('simplify_tolerance_meters', 15.0)}m | Stop excursion: return<={pp.get('spike_max_return_meters', 30.0)}m dev>={pp.get('spike_min_deviation_meters', 8.0)}m)"
     )
     
     if workers > 1:
         with ThreadPoolExecutor(max_workers=workers) as executor:
             future_to_shape = {
-                executor.submit(_process_single_shape, shape_id, df, matcher, cleaner, logger, quality_thresholds, preprocess_kwargs): shape_id
+                executor.submit(_process_single_shape, shape_id, df, matcher, cleaner, logger, quality_thresholds, preprocess_kwargs, stop_usage.get(shape_id, [])): shape_id
                 for shape_id, df in shapes.items()
             }
             
@@ -185,13 +188,13 @@ def process_gtfs_shapes(gtfs_path: str, osrm_url: str, output_path: str, profile
                     failed_shapes.append((shape_id, str(exc)))
     else:
         for shape_id, df in shapes.items():
-            s_id, res, err = _process_single_shape(shape_id, df, matcher, cleaner, logger, quality_thresholds, preprocess_kwargs)
+            s_id, res, err = _process_single_shape(shape_id, df, matcher, cleaner, logger, quality_thresholds, preprocess_kwargs, stop_usage.get(shape_id, []))
             if err:
                 failed_shapes.append((s_id, err))
             else:
                 all_results.extend(res)
                 
-    logger.info(f"Processing complete. {len(all_results) // 5} shapes succeeded, {len(failed_shapes)} failed.")
+    logger.info(f"Processing complete. {len(all_results) // 4} shapes succeeded, {len(failed_shapes)} failed.")
     
     if failed_shapes:
         logger.warning(f"Failed shapes log ({len(failed_shapes)} total): {dict(failed_shapes)}")
@@ -225,10 +228,9 @@ def main():
     parser.add_argument("--no-bearings", action="store_true", help="Disable directional heading/bearing matching in OSRM")
     parser.add_argument("--simplify-tolerance", type=float, default=15.0, help="RDP simplification tolerance in meters applied before matching to strip GPS jitter and short stop tails (default: 15.0)")
     parser.add_argument("--max-points", type=int, default=500, help="Maximum trace points sent to OSRM after resampling (default: 500)")
-    parser.add_argument("--spike-return", type=float, default=20.0, help="Max chord length in meters for a vertex to count as a returning stop-tail spike (default: 20.0)")
-    parser.add_argument("--spike-deviation", type=float, default=15.0, help="Min deviation in meters for a vertex to be removed as a stop-tail spike (default: 15.0)")
-    parser.add_argument("--detour-span", type=float, default=100.0, help="Max span in meters of a same-corridor stop-triangle detour to remove (default: 100.0)")
-    parser.add_argument("--detour-deviation", type=float, default=12.0, help="Min lateral deviation in meters for a same-corridor detour to be removed (default: 12.0)")
+    parser.add_argument("--spike-return", type=float, default=30.0, help="Max chord length in meters for a stop excursion to count as returning to the corridor (default: 30.0)")
+    parser.add_argument("--spike-deviation", type=float, default=8.0, help="Min deviation in meters for a stop-excursion vertex to be removed (default: 8.0)")
+    parser.add_argument("--stop-radius", type=float, default=40.0, help="Max distance in meters from the excursion tip to a stop for removal (default: 40.0)")
     parser.add_argument("--min-confidence", type=float, default=0.75, help="Mean confidence below which a match is flagged suspect (default: 0.75)")
     parser.add_argument("--max-endpoint-error", type=float, default=40.0, help="Max mean start/end displacement in meters before a match is flagged (default: 40.0)")
     parser.add_argument("--max-lateral-deviation", type=float, default=50.0, help="Max perpendicular deviation in meters before a match is flagged (default: 50.0)")
@@ -254,8 +256,7 @@ def main():
         "simplify_tolerance_meters": args.simplify_tolerance,
         "spike_max_return_meters": args.spike_return,
         "spike_min_deviation_meters": args.spike_deviation,
-        "detour_max_span_meters": args.detour_span,
-        "detour_min_deviation_meters": args.detour_deviation,
+        "stop_radius_meters": args.stop_radius,
         "max_points": args.max_points,
     }
     process_gtfs_shapes(

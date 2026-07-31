@@ -135,3 +135,75 @@ def parse_shapes(gtfs_path: str, limit_routes: list[str] = None) -> tuple[dict[s
             os.remove(temp_zip)
 
     return shapes, route_mapping
+
+
+def parse_stop_usage(gtfs_path: str, limit_routes: list[str] = None) -> dict[str, list[dict]]:
+    """
+    Parses stop locations served by each shape, ordered by stop_sequence.
+
+    Joins stops.txt -> stop_times.txt -> trips.txt, grouped by shape_id and
+    filtered to bus routes (and any limit_routes match).
+
+    Args:
+        gtfs_path: Path to a GTFS .zip file, an extracted GTFS directory, or a URL.
+        limit_routes: Optional list of route short names, long names, or IDs.
+
+    Returns:
+        dict mapping shape_id to an ordered list of stop records:
+        {"stop_id": str, "stop_name": str, "stop_sequence": int, "lat": float, "lon": float}
+        Returns an empty dict when stop data is unavailable.
+    """
+    gtfs_path, temp_zip = _ensure_local_source(gtfs_path)
+
+    try:
+        _, _, bus_route_ids = _filter_bus_routes(gtfs_path, limit_routes)
+
+        stops_df = _read_gtfs_csv(gtfs_path, 'stops.txt')
+        stop_times_df = _read_gtfs_csv(gtfs_path, 'stop_times.txt')
+        trips_df = _read_gtfs_csv(gtfs_path, 'trips.txt')
+
+        if (stops_df.empty or stop_times_df.empty or trips_df.empty
+                or 'stop_id' not in stops_df.columns
+                or 'trip_id' not in stop_times_df.columns
+                or 'stop_id' not in stop_times_df.columns
+                or 'shape_id' not in trips_df.columns):
+            return {}
+
+        if bus_route_ids:
+            trips_df = trips_df[trips_df['route_id'].isin(bus_route_ids)]
+
+        if trips_df.empty:
+            return {}
+
+        stops_index = stops_df.set_index('stop_id')
+
+        merged = stop_times_df.merge(
+            trips_df[['trip_id', 'shape_id']], on='trip_id', how='inner'
+        )
+
+        shape_to_stops: dict[str, list[dict]] = {}
+        for shape_id, group in merged.groupby('shape_id'):
+            agg = group.groupby('stop_id').agg(
+                stop_sequence=('stop_sequence', 'min'),
+            ).reset_index().sort_values('stop_sequence')
+
+            records = []
+            for _, row in agg.iterrows():
+                stop_id = row['stop_id']
+                if stop_id not in stops_index.index:
+                    continue
+                stop_row = stops_index.loc[stop_id]
+                records.append({
+                    "stop_id": str(stop_id),
+                    "stop_name": str(stop_row.get('stop_name', '')) if 'stop_name' in stops_index.columns else '',
+                    "stop_sequence": int(row['stop_sequence']),
+                    "lat": float(stop_row['stop_lat']),
+                    "lon": float(stop_row['stop_lon']),
+                })
+            shape_to_stops[str(shape_id)] = records
+
+        return shape_to_stops
+
+    finally:
+        if temp_zip and os.path.exists(temp_zip):
+            os.remove(temp_zip)
