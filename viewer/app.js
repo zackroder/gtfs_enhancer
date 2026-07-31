@@ -15,12 +15,16 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r
 
 // Layer Groups
 const originalLayer = L.layerGroup().addTo(map);
+const simplifiedLayer = L.layerGroup().addTo(map);
+const spikeLayer = L.layerGroup().addTo(map);
 const cleanedLayer = L.layerGroup().addTo(map);
 const pointsLayer = L.layerGroup().addTo(map);
 
 // DOM Elements
 const fileInput = document.getElementById('geojson-upload');
 const toggleOriginal = document.getElementById('toggle-original');
+const toggleSimplified = document.getElementById('toggle-simplified');
+const toggleSpikeRemoved = document.getElementById('toggle-spike-removed');
 const toggleCleaned = document.getElementById('toggle-cleaned');
 const togglePoints = document.getElementById('toggle-points');
 const statTotal = document.getElementById('stat-total-shapes');
@@ -70,6 +74,16 @@ fileInput.addEventListener('change', (e) => {
 toggleOriginal.addEventListener('change', (e) => {
     if (e.target.checked) map.addLayer(originalLayer);
     else map.removeLayer(originalLayer);
+});
+
+toggleSimplified.addEventListener('change', (e) => {
+    if (e.target.checked) map.addLayer(simplifiedLayer);
+    else map.removeLayer(simplifiedLayer);
+});
+
+toggleSpikeRemoved.addEventListener('change', (e) => {
+    if (e.target.checked) map.addLayer(spikeLayer);
+    else map.removeLayer(spikeLayer);
 });
 
 toggleCleaned.addEventListener('change', (e) => {
@@ -122,6 +136,8 @@ function processGeoJSON(data) {
 function renderFeatures(allowedShapeIds) {
     // Clear existing layers
     originalLayer.clearLayers();
+    simplifiedLayer.clearLayers();
+    spikeLayer.clearLayers();
     cleanedLayer.clearLayers();
     pointsLayer.clearLayers();
 
@@ -143,7 +159,7 @@ function renderFeatures(allowedShapeIds) {
         const status = feature.properties?.status || 'cleaned';
         const matchStatus = feature.properties?.match_status || (status === 'cleaned' ? 'clean' : 'failed');
 
-        // Match quality filter
+        // Match quality filter only applies to cleaned/fallback features
         if (qualityFilter !== 'all' && matchStatus !== qualityFilter) {
             return;
         }
@@ -153,15 +169,18 @@ function renderFeatures(allowedShapeIds) {
         let pointColor = '#2563eb';
 
         if (status === 'original') {
-            style = {
-                color: '#ef4444',
-                weight: 5,
-                opacity: 0.4,
-                dashArray: '5, 5'
-            };
+            style = { color: '#ef4444', weight: 5, opacity: 0.4, dashArray: '5, 5' };
             targetLayer = originalLayer;
             pointColor = '#ef4444';
             originalCount++;
+        } else if (status === 'simplified') {
+            style = { color: '#f59e0b', weight: 4, opacity: 0.7, dashArray: '3, 3' };
+            targetLayer = simplifiedLayer;
+            pointColor = '#f59e0b';
+        } else if (status === 'spike_removed') {
+            style = { color: '#a855f7', weight: 4, opacity: 0.7 };
+            targetLayer = spikeLayer;
+            pointColor = '#a855f7';
         } else {
             style = {
                 color: STATUS_COLORS[matchStatus] || STATUS_COLORS.clean,
@@ -184,6 +203,9 @@ function renderFeatures(allowedShapeIds) {
                 const props = f.properties || {};
                 let popupContent = `<strong>Shape ID:</strong> ${props.shape_id || 'Unknown'}<br>`;
                 popupContent += `<strong>Status:</strong> ${props.status || 'Cleaned'}<br>`;
+                if (props.points !== undefined && props.points !== null) {
+                    popupContent += `<strong>Points:</strong> ${props.points}<br>`;
+                }
                 if (props.match_status) {
                     popupContent += `<strong>Match Quality:</strong> <span style="color:${STATUS_COLORS[props.match_status] || '#2563eb'}; font-weight:600;">${props.match_status}</span><br>`;
                 }
@@ -203,18 +225,11 @@ function renderFeatures(allowedShapeIds) {
                 if (props.max_lateral_deviation !== undefined && props.max_lateral_deviation !== null) {
                     popupContent += `<strong>Max Lateral Deviation:</strong> ${props.max_lateral_deviation}m<br>`;
                 }
-                if (props.repair_count !== undefined && props.repair_count !== null) {
-                    popupContent += `<strong>Repairs Applied:</strong> ${props.repair_count}<br>`;
+                if (props.spikes_removed !== undefined && props.spikes_removed !== null) {
+                    popupContent += `<strong>Stop-Tail Spikes Removed:</strong> ${props.spikes_removed}<br>`;
                 }
-                if (props.stop_tail_count !== undefined && props.stop_tail_count !== null) {
-                    popupContent += `<strong>Stop Tails Removed:</strong> ${props.stop_tail_count}`;
-                    if (props.stop_tail_points_removed) {
-                        popupContent += ` (${props.stop_tail_points_removed} pts)`;
-                    }
-                    if (props.stop_tail_stop_ids && props.stop_tail_stop_ids.length) {
-                        popupContent += ` - ${props.stop_tail_stop_ids.join(', ')}`;
-                    }
-                    popupContent += `<br>`;
+                if (props.simplified_points !== undefined && props.simplified_points !== null) {
+                    popupContent += `<strong>Point Reduction:</strong> ${props.original_points} → ${props.simplified_points} → ${props.spike_removed_points} → ${props.matched_points}<br>`;
                 }
                 l.bindPopup(popupContent);
             }
