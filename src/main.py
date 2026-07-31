@@ -60,14 +60,19 @@ def _process_single_shape(shape_id: str, df, matcher: OSRMMapMatcher, cleaner: S
         original_coords = list(zip(df['shape_pt_lon'], df['shape_pt_lat']))
         original_geom = LineString(original_coords) if len(original_coords) >= 2 else None
 
-        # 0. Pre-matching stub filter (opt-in; diagnostic-only by default)
+        # 0. Pre-matching out-and-back stub filtering (opt-in; diagnostic-only by default)
         if enable_stub_filter:
-            pre_filtered_df = cleaner.filter_perpendicular_stubs(df, max_stub_meters=max_stub_meters)
-            removed_stubs_count = len(df) - len(pre_filtered_df)
-            if removed_stubs_count > 0:
-                logger.info(f"Pre-matching filter removed {removed_stubs_count} side-stub point(s) from shape_id={shape_id}")
+            pre_filtered_df, stub_info = cleaner.filter_out_and_back_stubs(df, max_stub_meters=max_stub_meters)
+            if stub_info:
+                logger.info(f"Pre-matching filter removed {len(stub_info)} out-and-back stub span(s) from shape_id={shape_id}")
         else:
             pre_filtered_df = df
+            _, stub_info = cleaner.find_out_and_back_stubs(df, max_stub_meters=max_stub_meters)
+            if stub_info:
+                logger.info(
+                    f"[diagnostic] Detected {len(stub_info)} candidate out-and-back stub(s) in shape_id={shape_id}: "
+                    f"{stub_info[:5]}"
+                )
 
         # 1. Map Match (continuity-aware, gaps split, diagnostics preserved)
         match = matcher.match_shape(pre_filtered_df)
