@@ -67,6 +67,11 @@ def _process_single_shape(shape_id: str, df, matcher: OSRMMapMatcher, cleaner: S
             points=len(stages["spike_removed"]),
             spikes_removed=len(stages["spikes"]),
         ))
+        results.append(_feature(
+            shape_id, "detour_removed", LineString(stages["detour_removed"]),
+            points=len(stages["detour_removed"]),
+            detours_removed=len(stages["detours"]),
+        ))
 
         # Map match the cleaned skeleton
         match = matcher.match_coords(stages["final"])
@@ -87,8 +92,8 @@ def _process_single_shape(shape_id: str, df, matcher: OSRMMapMatcher, cleaner: S
 
         logger.info(
             f"shape_id={shape_id} | distance={match.distance_meters}m | confidence={match.confidences} "
-            f"| pts {len(stages['original'])}->{len(stages['simplified'])}->{len(stages['spike_removed'])} "
-            f"| spikes={len(stages['spikes'])} | status={quality['status']} | reasons={quality['reasons']}"
+            f"| pts {len(stages['original'])}->{len(stages['simplified'])}->{len(stages['spike_removed'])}->{len(stages['detour_removed'])} "
+            f"| spikes={len(stages['spikes'])} | detours={len(stages['detours'])} | status={quality['status']} | reasons={quality['reasons']}"
         )
 
         results.append(_feature(
@@ -109,9 +114,12 @@ def _process_single_shape(shape_id: str, df, matcher: OSRMMapMatcher, cleaner: S
             original_points=len(stages["original"]),
             simplified_points=len(stages["simplified"]),
             spike_removed_points=len(stages["spike_removed"]),
+            detour_removed_points=len(stages["detour_removed"]),
             matched_points=len(match.geometry.coords),
             spikes_removed=len(stages["spikes"]),
             spike_details=stages["spikes"],
+            detours_removed=len(stages["detours"]),
+            detour_details=stages["detours"],
         ))
 
         return shape_id, results, None
@@ -153,7 +161,8 @@ def process_gtfs_shapes(gtfs_path: str, osrm_url: str, output_path: str, profile
     logger.info(
         f"Starting map matching using {workers} parallel worker thread(s) "
         f"(Snap Radius: {snap_radius}m | Bearings: {use_bearings} ±{bearing_range}° | "
-        f"RDP: {pp.get('simplify_tolerance_meters', 15.0)}m | Spike: return<={pp.get('spike_max_return_meters', 20.0)}m dev>={pp.get('spike_min_deviation_meters', 15.0)}m)"
+        f"RDP: {pp.get('simplify_tolerance_meters', 15.0)}m | Spike: return<={pp.get('spike_max_return_meters', 20.0)}m dev>={pp.get('spike_min_deviation_meters', 15.0)}m | "
+        f"Detour: span<={pp.get('detour_max_span_meters', 100.0)}m dev>={pp.get('detour_min_deviation_meters', 12.0)}m)"
     )
     
     if workers > 1:
@@ -182,7 +191,7 @@ def process_gtfs_shapes(gtfs_path: str, osrm_url: str, output_path: str, profile
             else:
                 all_results.extend(res)
                 
-    logger.info(f"Processing complete. {len(all_results) // 4} shapes succeeded, {len(failed_shapes)} failed.")
+    logger.info(f"Processing complete. {len(all_results) // 5} shapes succeeded, {len(failed_shapes)} failed.")
     
     if failed_shapes:
         logger.warning(f"Failed shapes log ({len(failed_shapes)} total): {dict(failed_shapes)}")
@@ -218,6 +227,8 @@ def main():
     parser.add_argument("--max-points", type=int, default=500, help="Maximum trace points sent to OSRM after resampling (default: 500)")
     parser.add_argument("--spike-return", type=float, default=20.0, help="Max chord length in meters for a vertex to count as a returning stop-tail spike (default: 20.0)")
     parser.add_argument("--spike-deviation", type=float, default=15.0, help="Min deviation in meters for a vertex to be removed as a stop-tail spike (default: 15.0)")
+    parser.add_argument("--detour-span", type=float, default=100.0, help="Max span in meters of a same-corridor stop-triangle detour to remove (default: 100.0)")
+    parser.add_argument("--detour-deviation", type=float, default=12.0, help="Min lateral deviation in meters for a same-corridor detour to be removed (default: 12.0)")
     parser.add_argument("--min-confidence", type=float, default=0.75, help="Mean confidence below which a match is flagged suspect (default: 0.75)")
     parser.add_argument("--max-endpoint-error", type=float, default=40.0, help="Max mean start/end displacement in meters before a match is flagged (default: 40.0)")
     parser.add_argument("--max-lateral-deviation", type=float, default=50.0, help="Max perpendicular deviation in meters before a match is flagged (default: 50.0)")
@@ -243,6 +254,8 @@ def main():
         "simplify_tolerance_meters": args.simplify_tolerance,
         "spike_max_return_meters": args.spike_return,
         "spike_min_deviation_meters": args.spike_deviation,
+        "detour_max_span_meters": args.detour_span,
+        "detour_min_deviation_meters": args.detour_deviation,
         "max_points": args.max_points,
     }
     process_gtfs_shapes(

@@ -1,5 +1,5 @@
 import pandas as pd
-from src.shape_cleaner import simplify_coords, remove_spikes, ShapeCleaner
+from src.shape_cleaner import simplify_coords, remove_spikes, remove_corridor_detours, ShapeCleaner
 
 
 def test_simplify_collapses_collinear_points():
@@ -65,9 +65,69 @@ def test_preprocess_shape_returns_all_stages():
     df = _df([0.0, 0.0, 0.0003, 0.0, 0.0], [0.0, 0.0001, 0.0001, 0.0001, 0.0002])
     stages = ShapeCleaner().preprocess_shape(df)
 
-    assert set(['original', 'simplified', 'spike_removed', 'final', 'spikes']) <= set(stages)
+    assert set(['original', 'simplified', 'spike_removed', 'detour_removed', 'final', 'spikes', 'detours']) <= set(stages)
     assert stages['original'][0] == (0.0, 0.0)
     assert stages['original'][-1] == (0.0, 0.0002)
     assert len(stages['simplified']) <= len(stages['original'])
     assert len(stages['spike_removed']) <= len(stages['simplified'])
+    assert len(stages['detour_removed']) <= len(stages['spike_removed'])
     assert len(stages['final']) >= 2
+
+
+def test_remove_corridor_detour_removes_stop_triangle():
+    # Corridor runs north along lat (lon=0). The trace pokes east to a stop
+    # (~18m) at the midpoint and rejoins the corridor 60m along.
+    # A(0,0) -> B(0.00016,0.00027) -> C(0,0.00054)
+    coords = [(0.0, 0.0), (0.00016, 0.00027), (0.0, 0.00054)]
+    # Add corridor context on both sides so entry/exit headings are known
+    coords = [(0.0, -0.0001)] + coords + [(0.0, 0.00064)]
+
+    cleaned, removed = remove_corridor_detours(coords)
+    assert len(removed) == 1
+    assert removed[0]["removed_points"] == 1
+    # The triangle interior (B) is gone; corridor endpoints remain
+    assert list(cleaned) == [(0.0, -0.0001), (0.0, 0.0), (0.0, 0.00054), (0.0, 0.00064)]
+
+
+def test_remove_corridor_detour_preserves_90_degree_turn():
+    # A 90-degree corner must NOT be removed: the corridor heading changes.
+    # Pre-turn corridor heads north, post-turn corridor heads east.
+    coords = [
+        (0.0, -0.0001),   # south of A, heading north
+        (0.0, 0.0),       # A
+        (0.0, 0.0002),    # B north
+        (0.0002, 0.0002), # C east
+        (0.0004, 0.0002), # D
+        (0.0006, 0.0002), # east of D, heading east
+    ]
+    cleaned, removed = remove_corridor_detours(coords)
+    assert removed == []
+    assert list(cleaned) == coords
+
+
+def test_remove_corridor_detour_preserves_large_loop():
+    # A block loop (large detour ratio) must not be removed.
+    coords = [
+        (0.0, 0.0),
+        (0.0002, 0.0),
+        (0.0002, 0.0002),
+        (0.0, 0.0002),
+        (0.0, 0.0004),
+    ]
+    cleaned, removed = remove_corridor_detours(coords)
+    assert removed == []
+    assert list(cleaned) == coords
+
+
+def test_remove_corridor_detour_requires_same_corridor():
+    # An S-curve that rejoins at an angle should not be flagged.
+    coords = [
+        (0.0, -0.0001),
+        (0.0, 0.0),
+        (0.0002, 0.0001),
+        (0.0002, 0.0003),
+        (0.0004, 0.0004),
+        (0.0006, 0.0004),
+    ]
+    cleaned, removed = remove_corridor_detours(coords)
+    assert removed == []

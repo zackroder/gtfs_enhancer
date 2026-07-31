@@ -49,20 +49,22 @@ def test_process_single_shape_emits_all_intermediate_stages():
 
     assert err is None
     statuses = {r["status"] for r in results}
-    assert {"original", "simplified", "spike_removed", "cleaned"} <= statuses
+    assert {"original", "simplified", "spike_removed", "detour_removed", "cleaned"} <= statuses
 
     original = next(r for r in results if r["status"] == "original")
     simplified = next(r for r in results if r["status"] == "simplified")
     spike_removed = next(r for r in results if r["status"] == "spike_removed")
+    detour_removed = next(r for r in results if r["status"] == "detour_removed")
     cleaned = next(r for r in results if r["status"] == "cleaned")
 
     assert original["points"] == len(_df())
     assert len(simplified["geometry"].coords) <= original["points"]
     assert spike_removed["spikes_removed"] >= 0
+    assert detour_removed["detours_removed"] >= 0
 
     assert cleaned["match_status"] in ("clean", "suspect", "untrusted")
     assert cleaned["original_points"] == original["points"]
-    assert cleaned["spike_removed_points"] == len(spike_removed["geometry"].coords)
+    assert cleaned["detour_removed_points"] == len(detour_removed["geometry"].coords)
     assert cleaned["matched_points"] == 4
 
 
