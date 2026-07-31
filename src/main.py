@@ -60,11 +60,19 @@ def _process_single_shape(shape_id: str, df, matcher: OSRMMapMatcher, cleaner: S
             pre_filtered_df = df
             
         # 1. Map Match
-        matched_geom, details = matcher.match_shape(pre_filtered_df)
+        match = matcher.match_shape(pre_filtered_df)
         
-        if not matched_geom:
-            logger.warning(f"Map matching returned no geometry for shape_id={shape_id}")
-            return shape_id, [], "Map matching returned None"
+        if not match.success or match.geometry is None:
+            logger.warning(f"Map matching failed for shape_id={shape_id}: {match.error}")
+            return shape_id, [], match.error or "Map matching returned None"
+        
+        matched_geom = match.geometry
+        details = {
+            "distance_meters": match.distance_meters,
+            "confidence": match.confidences,
+            "num_segments": len(match.segments),
+            "osm_nodes": match.osm_nodes,
+        }
             
         # 2. Clean Shape
         cleaned_geom = cleaner.clean_shape(matched_geom)

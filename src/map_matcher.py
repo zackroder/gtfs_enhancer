@@ -1,9 +1,33 @@
 import math
+from dataclasses import dataclass, field
+from typing import Optional
+
 import requests
 import pandas as pd
-from shapely.geometry import LineString, shape
-import urllib.parse
-import json
+from shapely.geometry import LineString, Point, shape
+
+
+def _haversine_meters(p1: tuple[float, float], p2: tuple[float, float]) -> float:
+    """Approximate geodesic distance in meters between two (lon, lat) points."""
+    mean_lat = math.radians((p1[1] + p2[1]) / 2.0)
+    dx = (p2[0] - p1[0]) * 111000.0 * math.cos(mean_lat)
+    dy = (p2[1] - p1[1]) * 111000.0
+    return math.hypot(dx, dy)
+
+
+def _polyline_length(coords: list[tuple[float, float]]) -> float:
+    """Total length in meters of a polyline defined by (lon, lat) coords."""
+    return sum(_haversine_meters(coords[i], coords[i + 1]) for i in range(len(coords) - 1))
+
+
+def _dedupe_coords(coords: list[tuple[float, float]]) -> list[tuple[float, float]]:
+    """Remove consecutive duplicate coordinates while preserving order and endpoints."""
+    out = []
+    for c in coords:
+        if not out or c != out[-1]:
+            out.append(c)
+    return out
+
 
 def _resample_max_gap(coords: list[tuple[float, float]], max_gap_meters: float = 300.0, max_points: int = 500) -> list[tuple[float, float]]:
     """
@@ -12,30 +36,19 @@ def _resample_max_gap(coords: list[tuple[float, float]], max_gap_meters: float =
     """
     if len(coords) < 2:
         return coords
-        
-    # Calculate total length in meters
-    total_dist = 0.0
-    for i in range(len(coords) - 1):
-        p1, p2 = coords[i], coords[i+1]
-        mean_lat = math.radians((p1[1] + p2[1]) / 2.0)
-        dx = (p2[0] - p1[0]) * 111000.0 * math.cos(mean_lat)
-        dy = (p2[1] - p1[1]) * 111000.0
-        total_dist += math.hypot(dx, dy)
-        
+
+    total_dist = _polyline_length(coords)
+
     # Dynamic gap budget so point count never exceeds max_points
     min_required_gap = total_dist / max(1, (max_points - 1))
     effective_gap = max(max_gap_meters, min_required_gap)
-    
+
     resampled = [coords[0]]
     for i in range(len(coords) - 1):
         p1 = coords[i]
-        p2 = coords[i+1]
-        
-        mean_lat = math.radians((p1[1] + p2[1]) / 2.0)
-        dx = (p2[0] - p1[0]) * 111000.0 * math.cos(mean_lat)
-        dy = (p2[1] - p1[1]) * 111000.0
-        dist = math.hypot(dx, dy)
-        
+        p2 = coords[i + 1]
+        dist = _haversine_meters(p1, p2)
+
         if dist > effective_gap:
             num_segments = int(math.ceil(dist / effective_gap))
             for k in range(1, num_segments):
@@ -43,12 +56,11 @@ def _resample_max_gap(coords: list[tuple[float, float]], max_gap_meters: float =
                 interp_lon = p1[0] + fraction * (p2[0] - p1[0])
                 interp_lat = p1[1] + fraction * (p2[1] - p1[1])
                 resampled.append((interp_lon, interp_lat))
-                
+
         resampled.append(p2)
-        
+
     return resampled[:max_points]
 
-import math
 
 def _compute_bearings(coords: list[tuple[float, float]], bearing_range: int = 45) -> str:
     """
@@ -59,7 +71,7 @@ def _compute_bearings(coords: list[tuple[float, float]], bearing_range: int = 45
     n = len(coords)
     if n < 2:
         return ";".join([f"0,{bearing_range}"] * n)
-        
+
     for i in range(n):
         if i < n - 1:
             p1 = coords[i]
@@ -67,26 +79,65 @@ def _compute_bearings(coords: list[tuple[float, float]], bearing_range: int = 45
         else:
             p1 = coords[i - 1]
             p2 = coords[i]
-            
+
         lon1, lat1 = math.radians(p1[0]), math.radians(p1[1])
         lon2, lat2 = math.radians(p2[0]), math.radians(p2[1])
-        
+
         dlon = lon2 - lon1
         y = math.sin(dlon) * math.cos(lat2)
         x = math.cos(lat1) * math.sin(lat2) - math.sin(lat1) * math.cos(lat2) * math.cos(dlon)
-        
+
         bearing_rad = math.atan2(y, x)
         bearing_deg = (math.degrees(bearing_rad) + 360.0) % 360.0
-        
+
         bearings.append(f"{int(round(bearing_deg))},{bearing_range}")
-        
+
     return ";".join(bearings)
 
+
+@dataclass
+class SegmentResult:
+    """A single contiguous OSRM map matching result (one entry in the matchings array)."""
+    geometry: LineString
+    confidence: float
+    distance_meters: float
+    osm_nodes: list
+    source_start: Optional[int]
+    source_end: Optional[int]
+    tracepoint_indices: list
+    repaired: bool = False
+
+
+@dataclass
+class MatchResult:
+    """Structured result of a map matching request, preserving diagnostics for downstream validation."""
+    success: bool = False
+    geometry: Optional[LineString] = None
+    segments: list = field(default_factory=list)
+    tracepoints: list = field(default_factory=list)
+    confidences: list = field(default_factory=list)
+    distance_meters: float = 0.0
+    osm_nodes: list = field(default_factory=list)
+    request_coords: list = field(default_factory=list)
+    repair_count: int = 0
+    error: str = ""
+
+
 class OSRMMapMatcher:
-    def __init__(self, base_url: str = "http://localhost:5000", profile: str = "bus", max_points: int = 500, max_gap_meters: float = 300.0, snap_radius_meters: float = 15.0, use_bearings: bool = True, bearing_range: int = 45):
+    def __init__(
+        self,
+        base_url: str = "http://localhost:5000",
+        profile: str = "bus",
+        max_points: int = 500,
+        max_gap_meters: float = 300.0,
+        snap_radius_meters: float = 15.0,
+        use_bearings: bool = True,
+        bearing_range: int = 45,
+        stitch_tolerance_meters: float = 25.0,
+    ):
         """
         Initializes the MapMatcher.
-        
+
         Args:
             base_url: The base URL of the OSRM instance.
             profile: The routing profile (e.g., 'bus', 'driving').
@@ -95,6 +146,8 @@ class OSRMMapMatcher:
             snap_radius_meters: Search radius in meters for snapping GPS points to road network.
             use_bearings: Whether to pass directional heading/bearing constraints to OSRM.
             bearing_range: Allowed directional heading variance in degrees (+/- range).
+            stitch_tolerance_meters: Maximum endpoint gap in meters before two adjacent
+                matching segments are considered disconnected (no artificial connector added).
         """
         self.base_url = base_url.rstrip('/')
         self.profile = profile
@@ -103,40 +156,23 @@ class OSRMMapMatcher:
         self.snap_radius_meters = snap_radius_meters
         self.use_bearings = use_bearings
         self.bearing_range = bearing_range
+        self.stitch_tolerance_meters = stitch_tolerance_meters
 
-    def match_shape(self, shape_df: pd.DataFrame) -> tuple[LineString, dict]:
-        """
-        Takes a DataFrame containing GTFS shape points and returns a map-matched Shapely LineString and details dict.
-        
-        Args:
-            shape_df: DataFrame with at least 'shape_pt_lon' and 'shape_pt_lat' columns,
-                      ordered by 'shape_pt_sequence'.
-                      
-        Returns:
-            A tuple of (Shapely LineString, details_dict), or (None, {}) if matching failed.
-        """
-        # Ensure it's sorted
-        if 'shape_pt_sequence' in shape_df.columns:
-            shape_df = shape_df.sort_values(by='shape_pt_sequence')
-            
-        # Extract coordinates
-        coords = list(zip(shape_df['shape_pt_lon'], shape_df['shape_pt_lat']))
-        
-        if len(coords) < 2:
-            raise ValueError("At least 2 points are required for map matching.")
-            
-        # Downsample using RDP if point count exceeds max_points
+    def _preprocess(self, coords: list[tuple[float, float]]) -> list[tuple[float, float]]:
+        """Deduplicate consecutive points, then downsample/resample to OSRM point budget."""
+        coords = _dedupe_coords(coords)
+
         if len(coords) > self.max_points:
             geom = LineString(coords)
-            tolerance = 0.00005 # ~5 meters in degrees
-            
+            tolerance = 0.00005  # ~5 meters in degrees
+
             while len(coords) > self.max_points:
                 simplified = geom.simplify(tolerance, preserve_topology=False)
                 raw_coords = list(simplified.coords)
-                
+
                 # Resample straightaways so gaps do not exceed max_gap_meters (e.g. 300m)
                 coords = _resample_max_gap(raw_coords, max_gap_meters=self.max_gap_meters, max_points=self.max_points)
-                
+
                 tolerance *= 1.5
                 if tolerance > 0.01:
                     break
@@ -145,75 +181,146 @@ class OSRMMapMatcher:
             coords = _resample_max_gap(coords, max_gap_meters=self.max_gap_meters, max_points=self.max_points)
             if len(coords) > self.max_points:
                 coords = coords[:self.max_points]
-        
-        # OSRM expects coordinates in the path as {longitude},{latitude};{longitude},{latitude}...
+
+        return coords
+
+    def _request(self, coords: list[tuple[float, float]], snap_radius_meters: float) -> tuple[Optional[dict], str]:
+        """Issue an OSRM match request. Returns (json_data, error_string)."""
         coords_str = ";".join([f"{lon:.5f},{lat:.5f}" for lon, lat in coords])
-        
         url = f"{self.base_url}/match/v1/{self.profile}/{coords_str}"
-        
-        # Parameters
-        radius_str = str(int(self.snap_radius_meters))
+
+        radius_str = str(int(snap_radius_meters))
         params = {
             "geometries": "geojson",
             "overview": "full",
             "radiuses": ";".join([radius_str] * len(coords)),
-            "gaps": "ignore",
-            "annotations": "nodes,distance"
+            "gaps": "split",
+            "annotations": "nodes,distance",
         }
-        
+
         if self.use_bearings:
             params["bearings"] = _compute_bearings(coords, bearing_range=self.bearing_range)
-        
+
         response = requests.get(url, params=params)
-        
+
         if response.status_code != 200:
-            print(f"OSRM Error: {response.status_code} - {response.text}")
-            return None, {}
-            
+            return None, f"OSRM HTTP error {response.status_code}: {response.text[:200]}"
+
         data = response.json()
-        
+
         if data.get("code") != "Ok" or not data.get("matchings"):
-            print(f"OSRM Map Matching failed or returned no matchings: {data.get('code')}")
-            return None, {}
-            
-        # OSRM can return multiple matching segments if there are gaps.
-        # Stitch all matching geometries together so long routes are not cut off.
-        all_coords = []
-        confidences = []
-        total_distance = 0.0
-        osm_nodes = []
-        
+            return None, f"OSRM map matching failed: {data.get('code')}"
+
+        return data, ""
+
+    def _build_segments(self, data: dict, coords: list[tuple[float, float]]) -> tuple[list[SegmentResult], list]:
+        """
+        Parse OSRM response into per-matching SegmentResults.
+        With gaps=split, each matching is a contiguous trace segment; a matching's
+        'indices' map its waypoints back to indices into the request coordinates.
+        """
+        tracepoints = data.get("tracepoints") or []
+        segments: list[SegmentResult] = []
+
         for match in data["matchings"]:
-            confidences.append(round(match.get("confidence", 0), 4))
-            total_distance += match.get("distance", 0.0)
-            
-            # Extract OSM nodes from legs annotation if available
-            legs = match.get("legs", [])
-            for leg in legs:
+            geom = shape(match["geometry"])
+            if not isinstance(geom, LineString) or len(geom.coords) < 2:
+                continue
+
+            indices = [int(i) for i in (match.get("indices") or [])]
+            nodes: list = []
+            for leg in match.get("legs", []):
                 annotation = leg.get("annotation", {})
                 if "nodes" in annotation:
-                    osm_nodes.extend(annotation["nodes"])
-                    
-            sub_geom = shape(match["geometry"])
-            if isinstance(sub_geom, LineString):
-                sub_coords = list(sub_geom.coords)
-                if not all_coords:
-                    all_coords.extend(sub_coords)
-                else:
-                    if all_coords[-1] == sub_coords[0]:
-                        all_coords.extend(sub_coords[1:])
-                    else:
-                        all_coords.extend(sub_coords)
-                        
-        if len(all_coords) < 2:
-            return None, {}
-            
-        details = {
-            "confidence": confidences,
-            "distance_meters": round(total_distance, 1),
-            "num_segments": len(data["matchings"]),
-            "osm_nodes": osm_nodes,
-            "matched_points_count": len(all_coords)
-        }
-        
-        return LineString(all_coords), details
+                    nodes.extend(annotation["nodes"])
+
+            source_start = indices[0] if indices else None
+            source_end = indices[-1] if indices else None
+
+            segments.append(SegmentResult(
+                geometry=geom,
+                confidence=float(match.get("confidence", 0.0)),
+                distance_meters=float(match.get("distance", 0.0)),
+                osm_nodes=nodes,
+                source_start=source_start,
+                source_end=source_end,
+                tracepoint_indices=indices,
+            ))
+
+        segments.sort(key=lambda s: (s.source_start if s.source_start is not None else -1,
+                                     s.source_end if s.source_end is not None else -1))
+        return segments, tracepoints
+
+    def _stitch(self, segments: list[SegmentResult]) -> tuple[Optional[LineString], int]:
+        """
+        Concatenate segment geometries into a primary LineString.
+        Segments are only joined when consecutive endpoints genuinely connect
+        (within stitch_tolerance_meters). Disjoint segments are NOT connected with
+        artificial straight-line connectors; the longest run is returned as the
+        primary geometry and the number of disconnected runs is reported.
+        """
+        if not segments:
+            return None, 0
+
+        runs = []
+        current = list(segments[0].geometry.coords)
+        for prev, nxt in zip(segments, segments[1:]):
+            gap = _haversine_meters(current[-1], list(nxt.geometry.coords)[0])
+            if gap <= self.stitch_tolerance_meters:
+                current.extend(list(nxt.geometry.coords)[1:])
+            else:
+                runs.append(LineString(current))
+                current = list(nxt.geometry.coords)
+        runs.append(LineString(current))
+
+        if len(runs) == 1:
+            return runs[0], 0
+
+        longest = max(runs, key=lambda g: _polyline_length(list(g.coords)))
+        return longest, len(runs) - 1
+
+    def match_shape(self, shape_df: pd.DataFrame) -> MatchResult:
+        """
+        Takes a DataFrame containing GTFS shape points and returns a structured
+        MatchResult with matched geometry, per-segment details, and raw tracepoints.
+        """
+        if 'shape_pt_sequence' in shape_df.columns:
+            shape_df = shape_df.sort_values(by='shape_pt_sequence')
+
+        coords = list(zip(shape_df['shape_pt_lon'], shape_df['shape_pt_lat']))
+
+        if len(coords) < 2:
+            raise ValueError("At least 2 points are required for map matching.")
+
+        coords = self._preprocess(coords)
+
+        data, err = self._request(coords, self.snap_radius_meters)
+        if data is None:
+            return MatchResult(success=False, error=err, request_coords=coords)
+
+        segments, tracepoints = self._build_segments(data, coords)
+        if not segments:
+            return MatchResult(success=False, error="No usable matching geometry returned", request_coords=coords)
+
+        geometry, disjoint_runs = self._stitch(segments)
+        if geometry is None:
+            return MatchResult(success=False, error="No matched geometry could be assembled", request_coords=coords)
+
+        total_distance = sum(s.distance_meters for s in segments)
+        all_nodes: list = []
+        for s in segments:
+            all_nodes.extend(s.osm_nodes)
+        confidences = [s.confidence for s in segments]
+
+        return MatchResult(
+            success=True,
+            geometry=geometry,
+            segments=segments,
+            tracepoints=tracepoints,
+            confidences=confidences,
+            distance_meters=round(total_distance, 1),
+            osm_nodes=all_nodes,
+            request_coords=coords,
+            repair_count=0,
+            error=f"disjoint_runs={disjoint_runs}" if disjoint_runs else "",
+        )
