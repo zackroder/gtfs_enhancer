@@ -230,7 +230,7 @@ def main():
     parser.add_argument("--max-points", type=int, default=500, help="Maximum trace points sent to OSRM after resampling (default: 500)")
     parser.add_argument("--spike-return", type=float, default=50.0, help="Max chord length in meters for a stop excursion to count as returning to the corridor (default: 50.0)")
     parser.add_argument("--spike-deviation", type=float, default=8.0, help="Min deviation in meters for a stop-excursion vertex to be removed (default: 8.0)")
-    parser.add_argument("--stop-radius", type=float, default=40.0, help="Max distance in meters from the excursion tip to a stop for removal (default: 40.0)")
+    parser.add_argument("--stop-radius", type=float, default=60.0, help="Max distance in meters from the excursion tip to a stop for removal (default: 60.0)")
     parser.add_argument("--min-confidence", type=float, default=0.75, help="Mean confidence below which a match is flagged suspect (default: 0.75)")
     parser.add_argument("--max-endpoint-error", type=float, default=40.0, help="Max mean start/end displacement in meters before a match is flagged (default: 40.0)")
     parser.add_argument("--max-lateral-deviation", type=float, default=50.0, help="Max perpendicular deviation in meters before a match is flagged (default: 50.0)")

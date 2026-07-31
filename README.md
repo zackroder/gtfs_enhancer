@@ -87,7 +87,7 @@ usage: main.py [-h] [--osrm-url OSRM_URL] [--profile PROFILE]
 | `--max-points` | `500` | Maximum trace points sent to OSRM after resampling. |
 | `--spike-return` | `30.0` | Max chord length (m) for a stop excursion to count as returning to the corridor. |
 | `--spike-deviation` | `8.0` | Min deviation (m) for a stop-excursion vertex to be removed. |
-| `--stop-radius` | `40.0` | Max distance (m) from the excursion tip to a stop for removal. |
+| `--stop-radius` | `60.0` | Max distance (m) from the excursion tip to a stop for removal. |
 | `--min-confidence` | `0.75` | Mean confidence below which a match is flagged `suspect`. |
 | `--max-endpoint-error` | `40.0` | Max mean start/end displacement in meters before a match is flagged. |
 | `--max-lateral-deviation` | `50.0` | Max perpendicular deviation in meters before a match is flagged. |

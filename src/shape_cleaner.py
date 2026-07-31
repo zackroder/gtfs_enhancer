@@ -104,7 +104,7 @@ def simplify_coords(coords: list[tuple[float, float]], tolerance_meters: float =
 def remove_stop_excursions(
     coords: list[tuple[float, float]],
     stops: list[dict],
-    stop_radius_meters: float = 40.0,
+    stop_radius_meters: float = 60.0,
     max_return_meters: float = 50.0,
     min_deviation_meters: float = 8.0,
     max_corridor_turn_deg: float = 45.0,
@@ -184,7 +184,7 @@ class ShapeCleaner:
         shape_df: pd.DataFrame,
         stops: list[dict] = None,
         simplify_tolerance_meters: float = 15.0,
-        stop_radius_meters: float = 40.0,
+        stop_radius_meters: float = 60.0,
         spike_max_return_meters: float = 50.0,
         spike_min_deviation_meters: float = 8.0,
         max_gap_meters: float = 300.0,
