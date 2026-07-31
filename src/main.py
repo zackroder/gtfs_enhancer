@@ -101,7 +101,7 @@ def _process_single_shape(shape_id: str, df, matcher: OSRMMapMatcher, cleaner: S
         logger.error(f"Race condition or failure on shape_id={shape_id} on thread {thread_name}: {type(e).__name__}: {e}", exc_info=True)
         return shape_id, [], str(e)
 
-def process_gtfs_shapes(gtfs_path: str, osrm_url: str, output_path: str, profile: str, max_points: int = 500, routes: list[str] = None, limit_shapes: int = None, workers: int = 4, log_file: str = "execution_debug.log", max_stub_meters: float = 75.0, snap_radius: float = 15.0, use_bearings: bool = True, bearing_range: int = 45, enable_stub_filter: bool = True):
+def process_gtfs_shapes(gtfs_path: str, osrm_url: str, output_path: str, profile: str, max_points: int = 500, routes: list[str] = None, limit_shapes: int = None, workers: int = 4, log_file: str = "execution_debug.log", max_stub_meters: float = 75.0, snap_radius: float = 30.0, use_bearings: bool = True, bearing_range: int = 45, enable_stub_filter: bool = True):
     logger = setup_logging(log_file)
     logger.info(f"Parsing shapes from {gtfs_path}...")
     
@@ -190,7 +190,7 @@ def main():
     parser.add_argument("--osrm-url", default="http://localhost:5000", help="Base URL of local OSRM instance (default: http://localhost:5000)")
     parser.add_argument("--profile", default="bus", help="OSRM routing profile to use (default: bus)")
     parser.add_argument("--max-points", type=int, default=500, help="Maximum trace points per OSRM request before downsampling (default: 500)")
-    parser.add_argument("--snap-radius", type=float, default=15.0, help="OSRM search radius in meters for snapping points (default: 15.0)")
+    parser.add_argument("--snap-radius", type=float, default=30.0, help="OSRM search radius in meters for snapping points (default: 30.0)")
     parser.add_argument("--bearing-range", type=int, default=45, help="Allowed directional heading variance in degrees +/- (default: 45)")
     parser.add_argument("--no-bearings", action="store_true", help="Disable directional heading/bearing matching in OSRM")
     parser.add_argument("--no-stub-filter", action="store_true", help="Disable pre-matching side-stub filtering")
