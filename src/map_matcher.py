@@ -134,6 +134,10 @@ class OSRMMapMatcher:
         use_bearings: bool = True,
         bearing_range: int = 45,
         stitch_tolerance_meters: float = 25.0,
+        min_confidence: float = 0.75,
+        bridge_snap_radius_meters: Optional[float] = None,
+        max_bridge_score: float = 250.0,
+        window_context_points: int = 5,
     ):
         """
         Initializes the MapMatcher.
@@ -148,6 +152,14 @@ class OSRMMapMatcher:
             bearing_range: Allowed directional heading variance in degrees (+/- range).
             stitch_tolerance_meters: Maximum endpoint gap in meters before two adjacent
                 matching segments are considered disconnected (no artificial connector added).
+            min_confidence: Per-segment confidence below which the segment is re-matched
+                with continuity-constrained windowed candidates.
+            bridge_snap_radius_meters: Tighter snap radius used for repair windows.
+                Defaults to min(snap_radius_meters, 15.0).
+            max_bridge_score: Maximum candidate score accepted for a repair; higher
+                scores mean the candidate does not convincingly connect its neighbors.
+            window_context_points: Number of source points to include on each side of a
+                repair window so candidates overlap with known-good neighbors.
         """
         self.base_url = base_url.rstrip('/')
         self.profile = profile
@@ -157,6 +169,15 @@ class OSRMMapMatcher:
         self.use_bearings = use_bearings
         self.bearing_range = bearing_range
         self.stitch_tolerance_meters = stitch_tolerance_meters
+        self.min_confidence = min_confidence
+        self.bridge_snap_radius_meters = bridge_snap_radius_meters if bridge_snap_radius_meters is not None else min(snap_radius_meters, 15.0)
+        self.max_bridge_score = max_bridge_score
+        self.window_context_points = window_context_points
+
+        # Scoring weights for continuity-constrained candidate selection
+        self.detour_penalty = 400.0
+        self.confidence_penalty = 250.0
+        self.node_continuity_bonus = 300.0
 
     def _preprocess(self, coords: list[tuple[float, float]]) -> list[tuple[float, float]]:
         """Deduplicate consecutive points, then downsample/resample to OSRM point budget."""
@@ -279,6 +300,217 @@ class OSRMMapMatcher:
         longest = max(runs, key=lambda g: _polyline_length(list(g.coords)))
         return longest, len(runs) - 1
 
+    # ------------------------------------------------------------------
+    # Continuity-constrained repair
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _collect_nodes(match: dict) -> list:
+        nodes: list = []
+        for leg in match.get("legs", []):
+            annotation = leg.get("annotation", {})
+            if "nodes" in annotation:
+                nodes.extend(annotation["nodes"])
+        return nodes
+
+    def _node_continuity(self, cand_nodes: list, prev_seg: Optional[SegmentResult], next_seg: Optional[SegmentResult]) -> float:
+        """
+        Same-road prior: reward a candidate whose OSM node trajectory shares nodes
+        with the tail of the preceding segment and the head of the following segment.
+        A candidate that literally continues the same road scores up to 2.0.
+        """
+        s = 0.0
+        if prev_seg is not None and prev_seg.osm_nodes and cand_nodes:
+            prev_tail = set(prev_seg.osm_nodes[-8:])
+            if any(n in prev_tail for n in cand_nodes[:4]):
+                s += 1.0
+        if next_seg is not None and next_seg.osm_nodes and cand_nodes:
+            next_head = set(next_seg.osm_nodes[:8])
+            if any(n in next_head for n in cand_nodes[-4:]):
+                s += 1.0
+        return s
+
+    def _score_candidate(
+        self,
+        geom: LineString,
+        cand_nodes: list,
+        gap_points: list[tuple[float, float]],
+        prev_seg: Optional[SegmentResult],
+        next_seg: Optional[SegmentResult],
+        confidence: float,
+    ) -> float:
+        """
+        Score a repair-window candidate. Lower is better.
+
+        Penalizes:
+          - distance from the previous segment's end to the candidate start
+          - distance from the candidate end to the next segment's start
+          - detours (candidate length much longer than the source span)
+          - lateral deviation of source points from the candidate
+          - low confidence
+
+        Rewards (same-road prior):
+          - OSM node continuity with the neighboring accepted segments
+        """
+        coords_list = list(geom.coords)
+        score = 0.0
+
+        if prev_seg is not None:
+            score += _haversine_meters(list(prev_seg.geometry.coords)[-1], coords_list[0])
+        if next_seg is not None:
+            score += _haversine_meters(coords_list[-1], list(next_seg.geometry.coords)[0])
+
+        src_len = _polyline_length(gap_points) if len(gap_points) > 1 else 0.0
+        cand_len = _polyline_length(coords_list)
+        detour = (cand_len / src_len) if src_len > 1.0 else 1.0
+        score += max(0.0, detour - 1.0) * self.detour_penalty
+
+        if gap_points:
+            devs = [Point(p).distance(geom) * 111000.0 for p in gap_points]
+            score += sum(devs) / len(devs)
+
+        score += (1.0 - confidence) * self.confidence_penalty
+        score -= self._node_continuity(cand_nodes, prev_seg, next_seg) * self.node_continuity_bonus
+        return score
+
+    def _best_candidate(
+        self,
+        window_coords: list[tuple[float, float]],
+        gap_points: list[tuple[float, float]],
+        prev_seg: Optional[SegmentResult],
+        next_seg: Optional[SegmentResult],
+    ) -> Optional[tuple[LineString, list, float, float]]:
+        """
+        Re-match a repair window with a tighter snap radius and return the candidate
+        (geometry, osm_nodes, confidence, distance) that best connects its neighbors.
+        Returns None when no candidate connects convincingly (score > max_bridge_score).
+        """
+        matchings = self._request_matchings(window_coords, self.bridge_snap_radius_meters)
+        if not matchings:
+            return None
+
+        best = None
+        best_score = float('inf')
+        for match in matchings:
+            geom = shape(match["geometry"])
+            if not isinstance(geom, LineString) or len(geom.coords) < 2:
+                continue
+            cand_nodes = self._collect_nodes(match)
+            conf = float(match.get("confidence", 0.0))
+            score = self._score_candidate(geom, cand_nodes, gap_points, prev_seg, next_seg, conf)
+            if score < best_score:
+                best_score = score
+                best = (geom, cand_nodes, conf, float(match.get("distance", 0.0)))
+
+        if best is None or best_score > self.max_bridge_score:
+            return None
+        return best
+
+    def _request_matchings(self, window_coords: list[tuple[float, float]], snap_radius_meters: float) -> list:
+        data, err = self._request(window_coords, snap_radius_meters)
+        if data is None:
+            return []
+        return data.get("matchings", [])
+
+    def _bridge_gaps(self, segments: list[SegmentResult], coords: list[tuple[float, float]]) -> tuple[list[SegmentResult], int]:
+        """
+        Try to reconnect disjoint matching segments by windowed re-matching of the
+        source span between them. Never adds a straight-line artificial connector;
+        a gap is only closed when a routed candidate connects both neighbors well.
+        """
+        if len(segments) < 2:
+            return segments, 0
+
+        ctx = self.window_context_points
+        bridged: list[SegmentResult] = []
+        repaired = 0
+
+        for idx, seg in enumerate(segments):
+            bridged.append(seg)
+            if idx + 1 >= len(segments):
+                continue
+            nxt = segments[idx + 1]
+            if seg.source_end is None or nxt.source_start is None:
+                continue
+
+            gap_points = coords[seg.source_end + 1:nxt.source_start]
+            start = max(0, seg.source_start - ctx)
+            end = min(len(coords), nxt.source_end + ctx + 1)
+            window = coords[start:end]
+            if len(window) < 4:
+                continue
+
+            best = self._best_candidate(window, gap_points, prev_seg=seg, next_seg=nxt)
+            if best is None:
+                continue
+
+            geom, nodes, conf, distance = best
+            bridged.append(SegmentResult(
+                geometry=geom,
+                confidence=conf,
+                distance_meters=distance,
+                osm_nodes=nodes,
+                source_start=None,
+                source_end=None,
+                tracepoint_indices=[],
+                repaired=True,
+            ))
+            repaired += 1
+
+        return bridged, repaired
+
+    def _refine_low_confidence(self, segments: list[SegmentResult], coords: list[tuple[float, float]]) -> tuple[list[SegmentResult], int]:
+        """
+        Re-match spans whose OSRM confidence is low, using windowed candidates that
+        are constrained to connect the surrounding accepted segments. This is the
+        'assume continued travel along the same road' repair: a wrong-road snap is
+        replaced only when a candidate better connects to the known-good neighbors.
+        """
+        ctx = self.window_context_points
+        refined: list[SegmentResult] = []
+        repaired = 0
+
+        for idx, seg in enumerate(segments):
+            if seg.confidence >= self.min_confidence or seg.source_start is None or seg.source_end is None:
+                refined.append(seg)
+                continue
+
+            points = coords[seg.source_start:seg.source_end + 1]
+            start = max(0, seg.source_start - ctx)
+            end = min(len(coords), seg.source_end + ctx + 1)
+            window = coords[start:end]
+            if len(window) < 4:
+                refined.append(seg)
+                continue
+
+            prev_seg = refined[-1] if refined else None
+            next_seg = segments[idx + 1] if idx + 1 < len(segments) else None
+
+            keep_score = self._score_candidate(seg.geometry, seg.osm_nodes, points, prev_seg, next_seg, seg.confidence)
+            best = self._best_candidate(window, points, prev_seg, next_seg)
+            if best is None:
+                refined.append(seg)
+                continue
+
+            geom, nodes, conf, distance = best
+            cand_score = self._score_candidate(geom, nodes, points, prev_seg, next_seg, conf)
+            if cand_score < keep_score:
+                refined.append(SegmentResult(
+                    geometry=geom,
+                    confidence=conf,
+                    distance_meters=distance,
+                    osm_nodes=nodes,
+                    source_start=seg.source_start,
+                    source_end=seg.source_end,
+                    tracepoint_indices=seg.tracepoint_indices,
+                    repaired=True,
+                ))
+                repaired += 1
+            else:
+                refined.append(seg)
+
+        return refined, repaired
+
     def match_shape(self, shape_df: pd.DataFrame) -> MatchResult:
         """
         Takes a DataFrame containing GTFS shape points and returns a structured
@@ -302,6 +534,13 @@ class OSRMMapMatcher:
         if not segments:
             return MatchResult(success=False, error="No usable matching geometry returned", request_coords=coords)
 
+        # Continuity-constrained repair:
+        # 1) bridge source gaps between disjoint matchings with routed candidates
+        # 2) re-match low-confidence spans against their known-good neighbors
+        segments, gap_repairs = self._bridge_gaps(segments, coords)
+        segments, refined = self._refine_low_confidence(segments, coords)
+        repair_count = gap_repairs + refined
+
         geometry, disjoint_runs = self._stitch(segments)
         if geometry is None:
             return MatchResult(success=False, error="No matched geometry could be assembled", request_coords=coords)
@@ -321,6 +560,6 @@ class OSRMMapMatcher:
             distance_meters=round(total_distance, 1),
             osm_nodes=all_nodes,
             request_coords=coords,
-            repair_count=0,
+            repair_count=repair_count,
             error=f"disjoint_runs={disjoint_runs}" if disjoint_runs else "",
         )
