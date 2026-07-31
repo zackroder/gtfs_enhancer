@@ -11,25 +11,16 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import geopandas as gpd
 from shapely.geometry import LineString
-from src.gtfs_parser import parse_shapes, parse_stop_usage
+from src.gtfs_parser import parse_shapes
 from src.map_matcher import OSRMMapMatcher
 from src.shape_cleaner import ShapeCleaner
 from src.quality import compute_match_metrics, classify_match
 
-STOP_AWARE_DEFAULTS = {
-    "enable": True,
-    "max_tail_meters": 125.0,
-    "stop_radius_meters": 25.0,
-    "return_corridor_meters": 20.0,
-    "association_radius_meters": 50.0,
-}
-
 def setup_logging(log_file: str = "execution_debug.log"):
-    """Sets up thread-safe logging to both console and log file for race condition diagnosis."""
+    """Sets up thread-safe logging to both console and log file."""
     logger = logging.getLogger("gtfs_enhancer")
     logger.setLevel(logging.INFO)
     
-    # Avoid duplicate handlers if setup_logging is called multiple times
     if logger.handlers:
         return logger
         
@@ -38,12 +29,10 @@ def setup_logging(log_file: str = "execution_debug.log"):
         datefmt='%Y-%m-%d %H:%M:%S'
     )
     
-    # File handler for diagnosing race conditions and failures
     file_handler = logging.FileHandler(log_file, mode='w')
     file_handler.setFormatter(formatter)
     file_handler.setLevel(logging.DEBUG)
     
-    # Console handler
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setFormatter(formatter)
     console_handler.setLevel(logging.INFO)
@@ -58,99 +47,50 @@ def _feature(shape_id: str, status: str, geometry, **properties) -> dict:
     feature.update(properties)
     return feature
 
-def _process_single_shape(shape_id: str, df, matcher: OSRMMapMatcher, cleaner: ShapeCleaner, logger: logging.Logger, max_stub_meters: float = 75.0, enable_stub_filter: bool = False, quality_thresholds: dict = None, stop_config: dict = None, stops_for_shape: list = None):
+def _process_single_shape(shape_id: str, df, matcher: OSRMMapMatcher, cleaner: ShapeCleaner, logger: logging.Logger, quality_thresholds: dict = None, preprocess_kwargs: dict = None):
     thread_name = current_thread().name
     logger.debug(f"Starting processing for shape {shape_id} with {len(df)} points on thread {thread_name}")
     
     results = []
     try:
-        # Original geometry is always preserved for comparison in the viewer
-        original_coords = list(zip(df['shape_pt_lon'], df['shape_pt_lat']))
-        original_geom = LineString(original_coords) if len(original_coords) >= 2 else None
+        stages = cleaner.preprocess_shape(df, **(preprocess_kwargs or {}))
 
-        pre_filtered_df = df
+        if len(stages["original"]) < 2:
+            logger.warning(f"Shape {shape_id} has fewer than 2 points; skipping.")
+            return shape_id, [], "Shape has fewer than 2 points"
 
-        # Stop-aware diagnostics (always computed when stops are available)
-        stop_tail_count = 0
-        stop_tail_points_removed = 0
-        stop_tail_stop_ids = []
-        stop_associated_count = 0
-        stop_assoc_max_error = 0.0
+        # Preserve each intermediate stage for review
+        results.append(_feature(shape_id, "original", LineString(stages["original"]), points=len(stages["original"])))
+        results.append(_feature(shape_id, "simplified", LineString(stages["simplified"]), points=len(stages["simplified"])))
+        results.append(_feature(
+            shape_id, "spike_removed", LineString(stages["spike_removed"]),
+            points=len(stages["spike_removed"]),
+            spikes_removed=len(stages["spikes"]),
+        ))
 
-        if stop_config and stop_config.get("enable") and stops_for_shape:
-            projected = cleaner.project_stops_to_shape(
-                df,
-                stops_for_shape,
-                association_radius_meters=stop_config["association_radius_meters"],
-            )
-            stop_associated_count = sum(1 for s in projected if s["is_associated"])
-            if projected:
-                stop_assoc_max_error = round(max(s["distance_to_shape_meters"] for s in projected), 1)
-
-            tails = cleaner.find_stop_tails(
-                df,
-                projected,
-                max_tail_meters=stop_config["max_tail_meters"],
-                stop_radius_meters=stop_config["stop_radius_meters"],
-                return_corridor_meters=stop_config["return_corridor_meters"],
-            )
-            stop_tail_count = len(tails)
-            if tails:
-                filtered, info = cleaner.remove_stop_tails(df, tails)
-                stop_tail_points_removed = len(df) - len(filtered)
-                stop_tail_stop_ids = sorted({t["stop_id"] for t in info})
-                pre_filtered_df = filtered
-                logger.info(
-                    f"Stop-aware filter removed {stop_tail_points_removed} point(s) from "
-                    f"{len(info)} stop tail(s) in shape_id={shape_id}: stops={stop_tail_stop_ids}"
-                )
-            else:
-                logger.debug(f"No stop tails detected for shape_id={shape_id} (associated stops: {stop_associated_count})")
-
-        # Pre-matching out-and-back stub filtering (opt-in; diagnostic-only by default)
-        if enable_stub_filter:
-            pre_filtered_df, stub_info = cleaner.filter_out_and_back_stubs(pre_filtered_df, max_stub_meters=max_stub_meters)
-            if stub_info:
-                logger.info(f"Pre-matching filter removed {len(stub_info)} out-and-back stub span(s) from shape_id={shape_id}")
-        else:
-            _, stub_info = cleaner.find_out_and_back_stubs(pre_filtered_df, max_stub_meters=max_stub_meters)
-            if stub_info:
-                logger.info(
-                    f"[diagnostic] Detected {len(stub_info)} candidate out-and-back stub(s) in shape_id={shape_id}: "
-                    f"{stub_info[:5]}"
-                )
-
-        # 1. Map Match (continuity-aware, gaps split, diagnostics preserved)
-        match = matcher.match_shape(pre_filtered_df)
-
-        if original_geom is not None:
-            results.append(_feature(shape_id, "original", original_geom))
+        # Map match the cleaned skeleton
+        match = matcher.match_coords(stages["final"])
 
         if not match.success or match.geometry is None:
             logger.warning(f"Map matching failed for shape_id={shape_id}: {match.error}")
-            # No centerline candidate exists; only then fall back to the source shape.
-            if original_geom is not None:
-                results.append(_feature(
-                    shape_id, "cleaned_fallback", original_geom,
-                    match_status="failed",
-                    rejection_reason=match.error or "Map matching returned None",
-                ))
+            results.append(_feature(
+                shape_id, "cleaned_fallback", LineString(stages["original"]),
+                match_status="failed",
+                rejection_reason=match.error or "Map matching returned None",
+                points=len(stages["original"]),
+            ))
             return shape_id, results, match.error or "Map matching returned None"
 
-        # 2. Validate the matched centerline
-        metrics = compute_match_metrics(original_coords, match.geometry, match)
+        # Validate the matched centerline
+        metrics = compute_match_metrics(stages["original"], match.geometry, match)
         quality = classify_match(metrics, quality_thresholds)
 
         logger.info(
             f"shape_id={shape_id} | distance={match.distance_meters}m | confidence={match.confidences} "
-            f"| segments={len(match.segments)} | repairs={match.repair_count} "
-            f"| stop_tails={stop_tail_count} | status={quality['status']} | reasons={quality['reasons']}"
+            f"| pts {len(stages['original'])}->{len(stages['simplified'])}->{len(stages['spike_removed'])} "
+            f"| spikes={len(stages['spikes'])} | status={quality['status']} | reasons={quality['reasons']}"
         )
-        if match.osm_nodes:
-            logger.debug(f"shape_id={shape_id} OSM Node Trajectory: {match.osm_nodes[:15]}...")
 
-        # Always emit the centerline result so we never regress to raw GPS jitter;
-        # diagnostics flag matches that need review/repair.
         results.append(_feature(
             shape_id, "cleaned", match.geometry,
             match_status=quality["status"],
@@ -166,13 +106,12 @@ def _process_single_shape(shape_id: str, df, matcher: OSRMMapMatcher, cleaner: S
             p95_lateral_deviation=metrics["p95_lateral_deviation"],
             source_length=metrics["source_length"],
             matched_length=metrics["matched_length"],
-            segment_count=metrics["segment_count"],
-            repair_count=metrics["repair_count"],
-            stop_tail_count=stop_tail_count,
-            stop_tail_points_removed=stop_tail_points_removed,
-            stop_tail_stop_ids=stop_tail_stop_ids,
-            stop_associated_count=stop_associated_count,
-            stop_association_max_error=stop_assoc_max_error,
+            original_points=len(stages["original"]),
+            simplified_points=len(stages["simplified"]),
+            spike_removed_points=len(stages["spike_removed"]),
+            matched_points=len(match.geometry.coords),
+            spikes_removed=len(stages["spikes"]),
+            spike_details=stages["spikes"],
         ))
 
         return shape_id, results, None
@@ -181,7 +120,7 @@ def _process_single_shape(shape_id: str, df, matcher: OSRMMapMatcher, cleaner: S
         logger.error(f"Failure on shape_id={shape_id} on thread {thread_name}: {type(e).__name__}: {e}", exc_info=True)
         return shape_id, [], str(e)
 
-def process_gtfs_shapes(gtfs_path: str, osrm_url: str, output_path: str, profile: str, max_points: int = 500, routes: list[str] = None, limit_shapes: int = None, workers: int = 4, log_file: str = "execution_debug.log", max_stub_meters: float = 75.0, snap_radius: float = 15.0, use_bearings: bool = True, bearing_range: int = 45, enable_stub_filter: bool = False, quality_thresholds: dict = None, simplify_tolerance: float = 15.0, stop_config: dict = None):
+def process_gtfs_shapes(gtfs_path: str, osrm_url: str, output_path: str, profile: str, max_points: int = 500, routes: list[str] = None, limit_shapes: int = None, workers: int = 4, log_file: str = "execution_debug.log", snap_radius: float = 15.0, use_bearings: bool = True, bearing_range: int = 45, quality_thresholds: dict = None, preprocess_kwargs: dict = None):
     logger = setup_logging(log_file)
     logger.info(f"Parsing shapes from {gtfs_path}...")
     
@@ -193,14 +132,6 @@ def process_gtfs_shapes(gtfs_path: str, osrm_url: str, output_path: str, profile
         
     logger.info(f"Found {len(shapes)} unique shapes for bus routes.")
     
-    stop_usage = {}
-    if stop_config.get("enable"):
-        try:
-            stop_usage = parse_stop_usage(gtfs_path, limit_routes=routes)
-            logger.info(f"Parsed stop usage for {len(stop_usage)} shapes.")
-        except Exception as e:
-            logger.warning(f"Failed to parse stop usage ({e}); running without stop-aware preprocessing.")
-
     if limit_shapes and limit_shapes > 0:
         shape_keys = list(shapes.keys())[:limit_shapes]
         shapes = {k: shapes[k] for k in shape_keys}
@@ -209,23 +140,26 @@ def process_gtfs_shapes(gtfs_path: str, osrm_url: str, output_path: str, profile
     matcher = OSRMMapMatcher(
         base_url=osrm_url,
         profile=profile,
-        max_points=max_points,
         snap_radius_meters=snap_radius,
         use_bearings=use_bearings,
-        bearing_range=bearing_range,
-        simplify_tolerance_meters=simplify_tolerance
+        bearing_range=bearing_range
     )
     cleaner = ShapeCleaner()
     
     all_results = []
     failed_shapes = []
     
-    logger.info(f"Starting map matching using {workers} parallel worker thread(s) (Snap Radius: {snap_radius}m | Bearings: {use_bearings} ±{bearing_range}° | Pre-filter: {enable_stub_filter} | Stop-aware: {stop_config.get('enable')})...")
+    pp = preprocess_kwargs or {}
+    logger.info(
+        f"Starting map matching using {workers} parallel worker thread(s) "
+        f"(Snap Radius: {snap_radius}m | Bearings: {use_bearings} ±{bearing_range}° | "
+        f"RDP: {pp.get('simplify_tolerance_meters', 15.0)}m | Spike: return<={pp.get('spike_max_return_meters', 20.0)}m dev>={pp.get('spike_min_deviation_meters', 15.0)}m)"
+    )
     
     if workers > 1:
         with ThreadPoolExecutor(max_workers=workers) as executor:
             future_to_shape = {
-                executor.submit(_process_single_shape, shape_id, df, matcher, cleaner, logger, max_stub_meters, enable_stub_filter, quality_thresholds, stop_config, stop_usage.get(shape_id, [])): shape_id
+                executor.submit(_process_single_shape, shape_id, df, matcher, cleaner, logger, quality_thresholds, preprocess_kwargs): shape_id
                 for shape_id, df in shapes.items()
             }
             
@@ -241,15 +175,14 @@ def process_gtfs_shapes(gtfs_path: str, osrm_url: str, output_path: str, profile
                     logger.error(f"Unhandled thread execution error for shape_id={shape_id}: {exc}", exc_info=True)
                     failed_shapes.append((shape_id, str(exc)))
     else:
-        # Sequential execution
         for shape_id, df in shapes.items():
-            s_id, res, err = _process_single_shape(shape_id, df, matcher, cleaner, logger, max_stub_meters, enable_stub_filter, quality_thresholds, stop_config, stop_usage.get(shape_id, []))
+            s_id, res, err = _process_single_shape(shape_id, df, matcher, cleaner, logger, quality_thresholds, preprocess_kwargs)
             if err:
                 failed_shapes.append((s_id, err))
             else:
                 all_results.extend(res)
                 
-    logger.info(f"Processing complete. {len(all_results) // 2} shapes succeeded, {len(failed_shapes)} failed.")
+    logger.info(f"Processing complete. {len(all_results) // 4} shapes succeeded, {len(failed_shapes)} failed.")
     
     if failed_shapes:
         logger.warning(f"Failed shapes log ({len(failed_shapes)} total): {dict(failed_shapes)}")
@@ -278,24 +211,20 @@ def main():
     parser.add_argument("output_path", help="Path to save the output GeoJSON")
     parser.add_argument("--osrm-url", default="http://localhost:5000", help="Base URL of local OSRM instance (default: http://localhost:5000)")
     parser.add_argument("--profile", default="bus", help="OSRM routing profile to use (default: bus)")
-    parser.add_argument("--max-points", type=int, default=500, help="Maximum trace points per OSRM request before downsampling (default: 500)")
     parser.add_argument("--snap-radius", type=float, default=15.0, help="OSRM search radius in meters for snapping points (default: 15.0; tighten to ~8-10m near parallel corridors)")
-    parser.add_argument("--simplify-tolerance", type=float, default=15.0, help="RDP simplification tolerance in meters applied to the trace before matching to strip GPS jitter (default: 15.0)")
     parser.add_argument("--bearing-range", type=int, default=45, help="Allowed directional heading variance in degrees +/- (default: 45)")
     parser.add_argument("--no-bearings", action="store_true", help="Disable directional heading/bearing matching in OSRM")
-    parser.add_argument("--enable-stub-filter", action="store_true", help="Enable pre-matching out-and-back stub filtering (diagnostic-only by default)")
-    parser.add_argument("--max-stub-meters", type=float, default=75.0, help="Maximum distance in meters to classify a pre-matching side-stub (default: 75.0)")
-    parser.add_argument("--no-stop-tails", action="store_true", help="Disable stop-aware stop-tail removal (enabled by default)")
-    parser.add_argument("--max-stop-tail-meters", type=float, default=125.0, help="Maximum path length in meters of a stop tail to remove (default: 125.0)")
-    parser.add_argument("--stop-radius", type=float, default=25.0, help="Max distance in meters from the poke-out tip to the stop (default: 25.0)")
-    parser.add_argument("--return-corridor", type=float, default=20.0, help="Max chord length in meters for a stop tail to count as returning to the corridor (default: 20.0)")
+    parser.add_argument("--simplify-tolerance", type=float, default=15.0, help="RDP simplification tolerance in meters applied before matching to strip GPS jitter and short stop tails (default: 15.0)")
+    parser.add_argument("--max-points", type=int, default=500, help="Maximum trace points sent to OSRM after resampling (default: 500)")
+    parser.add_argument("--spike-return", type=float, default=20.0, help="Max chord length in meters for a vertex to count as a returning stop-tail spike (default: 20.0)")
+    parser.add_argument("--spike-deviation", type=float, default=15.0, help="Min deviation in meters for a vertex to be removed as a stop-tail spike (default: 15.0)")
     parser.add_argument("--min-confidence", type=float, default=0.75, help="Mean confidence below which a match is flagged suspect (default: 0.75)")
     parser.add_argument("--max-endpoint-error", type=float, default=40.0, help="Max mean start/end displacement in meters before a match is flagged (default: 40.0)")
     parser.add_argument("--max-lateral-deviation", type=float, default=50.0, help="Max perpendicular deviation in meters before a match is flagged (default: 50.0)")
     parser.add_argument("--routes", type=str, default=None, help="Comma-separated list of route IDs or names to process (debug mode)")
     parser.add_argument("--limit-shapes", type=int, default=None, help="Limit processing to the first N shapes (debug mode)")
     parser.add_argument("--workers", type=int, default=4, help="Number of parallel worker threads (default: 4)")
-    parser.add_argument("--log-file", type=str, default="execution_debug.log", help="Log file path for race condition diagnostics (default: execution_debug.log)")
+    parser.add_argument("--log-file", type=str, default="execution_debug.log", help="Log file path (default: execution_debug.log)")
     
     args = parser.parse_args()
     
@@ -310,12 +239,11 @@ def main():
         "max_endpoint_error": args.max_endpoint_error,
         "max_lateral_deviation": args.max_lateral_deviation,
     }
-    stop_config = {
-        "enable": not args.no_stop_tails,
-        "max_tail_meters": args.max_stop_tail_meters,
-        "stop_radius_meters": args.stop_radius,
-        "return_corridor_meters": args.return_corridor,
-        "association_radius_meters": STOP_AWARE_DEFAULTS["association_radius_meters"],
+    preprocess_kwargs = {
+        "simplify_tolerance_meters": args.simplify_tolerance,
+        "spike_max_return_meters": args.spike_return,
+        "spike_min_deviation_meters": args.spike_deviation,
+        "max_points": args.max_points,
     }
     process_gtfs_shapes(
         args.gtfs_path,
@@ -327,14 +255,11 @@ def main():
         args.limit_shapes,
         args.workers,
         args.log_file,
-        args.max_stub_meters,
         args.snap_radius,
         use_bearings=not args.no_bearings,
         bearing_range=args.bearing_range,
-        enable_stub_filter=args.enable_stub_filter,
         quality_thresholds=quality_thresholds,
-        simplify_tolerance=args.simplify_tolerance,
-        stop_config=stop_config
+        preprocess_kwargs=preprocess_kwargs
     )
 
 if __name__ == "__main__":

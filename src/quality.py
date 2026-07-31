@@ -36,7 +36,7 @@ def compute_match_metrics(original_coords: list[tuple[float, float]], geometry: 
     Returns:
         dict with source_length, matched_length, length_ratio, endpoint_error,
         start_error, end_error, max_lateral_deviation, p95_lateral_deviation,
-        min_confidence, mean_confidence, segment_count, repair_count.
+        min_confidence, mean_confidence.
     """
     src_len = polyline_length(original_coords)
     matched_coords = list(geometry.coords)
@@ -65,8 +65,6 @@ def compute_match_metrics(original_coords: list[tuple[float, float]], geometry: 
         "p95_lateral_deviation": round(sorted(dists)[int(len(dists) * 0.95) - 1] * 111000.0, 1) if dists else 0.0,
         "min_confidence": round(min(confs), 4) if confs else 0.0,
         "mean_confidence": round(sum(confs) / len(confs), 4) if confs else 0.0,
-        "segment_count": len(match.segments) if hasattr(match, 'segments') else 1,
-        "repair_count": int(getattr(match, 'repair_count', 0)),
     }
     return metrics
 
@@ -103,8 +101,6 @@ def classify_match(metrics: dict, thresholds: Optional[dict] = None) -> dict:
     ratio = metrics.get("length_ratio", 1.0)
     if not (t["length_ratio_min"] <= ratio <= t["length_ratio_max"]):
         reasons.append(f"length ratio {ratio:.2f}")
-    if metrics.get("repair_count", 0) > 0:
-        reasons.append(f"{metrics['repair_count']} repairs applied")
 
     if not reasons:
         status = "clean"
