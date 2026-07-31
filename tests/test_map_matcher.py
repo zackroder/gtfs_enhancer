@@ -47,7 +47,7 @@ def test_match_shape_success(mock_get, sample_shape_df):
     }
     mock_get.return_value = _mock_response(payload)
 
-    matcher = OSRMMapMatcher(base_url="http://localhost:5000")
+    matcher = OSRMMapMatcher(base_url="http://localhost:5000", simplify_tolerance_meters=0.0)
 
     result = matcher.match_shape(sample_shape_df)
 
@@ -82,7 +82,7 @@ def test_match_shape_downsamples(mock_get):
     })
     mock_get.return_value = mock_response
 
-    matcher = OSRMMapMatcher(base_url="http://localhost:5000", max_points=3)
+    matcher = OSRMMapMatcher(base_url="http://localhost:5000", max_points=3, simplify_tolerance_meters=0.0)
 
     data = {
         'shape_pt_lon': [0.0, 1.0, 2.0, 3.0, 4.0],
@@ -132,7 +132,7 @@ def test_match_shape_keeps_disjoint_segments_separate(mock_get, sample_shape_df)
     }
     mock_get.return_value = _mock_response(payload)
 
-    matcher = OSRMMapMatcher()
+    matcher = OSRMMapMatcher(simplify_tolerance_meters=0.0)
     result = matcher.match_shape(sample_shape_df)
 
     assert result.success
@@ -167,7 +167,7 @@ def test_match_shape_stitches_contiguous_segments(mock_get, sample_shape_df):
     }
     mock_get.return_value = _mock_response(payload)
 
-    matcher = OSRMMapMatcher()
+    matcher = OSRMMapMatcher(simplify_tolerance_meters=0.0)
     result = matcher.match_shape(sample_shape_df)
 
     assert list(result.geometry.coords) == [(0.0, 0.0), (0.0, 0.5), (0.0, 1.0)]
@@ -185,3 +185,21 @@ def test_compute_bearings():
 def test_dedupe_coords_preserves_endpoints():
     coords = [(0.0, 0.0), (0.0, 0.0), (1.0, 1.0), (1.0, 1.0), (2.0, 2.0)]
     assert _dedupe_coords(coords) == [(0.0, 0.0), (1.0, 1.0), (2.0, 2.0)]
+
+def test_preprocess_simplifies_noisy_trace_and_preserves_endpoints():
+    # ~11m spacing (0.0001 deg lat) along a straight corridor with jitter.
+    # Default 15m RDP tolerance must collapse the interior jitter but keep endpoints.
+    matcher = OSRMMapMatcher(simplify_tolerance_meters=15.0)
+    coords = [(0.0, 0.0 + i * 0.0001) for i in range(20)]
+    simplified = matcher._preprocess(coords)
+
+    assert simplified[0] == coords[0]
+    assert simplified[-1] == coords[-1]
+    assert len(simplified) < len(coords)
+
+def test_preprocess_with_zero_tolerance_keeps_points():
+    matcher = OSRMMapMatcher(simplify_tolerance_meters=0.0)
+    coords = [(0.0, 0.0 + i * 0.0001) for i in range(20)]
+    simplified = matcher._preprocess(coords)
+    # No jitter stripping: interior points remain (resample may still run)
+    assert len(simplified) > 10

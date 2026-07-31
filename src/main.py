@@ -130,7 +130,7 @@ def _process_single_shape(shape_id: str, df, matcher: OSRMMapMatcher, cleaner: S
         logger.error(f"Failure on shape_id={shape_id} on thread {thread_name}: {type(e).__name__}: {e}", exc_info=True)
         return shape_id, [], str(e)
 
-def process_gtfs_shapes(gtfs_path: str, osrm_url: str, output_path: str, profile: str, max_points: int = 500, routes: list[str] = None, limit_shapes: int = None, workers: int = 4, log_file: str = "execution_debug.log", max_stub_meters: float = 75.0, snap_radius: float = 15.0, use_bearings: bool = True, bearing_range: int = 45, enable_stub_filter: bool = False, quality_thresholds: dict = None):
+def process_gtfs_shapes(gtfs_path: str, osrm_url: str, output_path: str, profile: str, max_points: int = 500, routes: list[str] = None, limit_shapes: int = None, workers: int = 4, log_file: str = "execution_debug.log", max_stub_meters: float = 75.0, snap_radius: float = 15.0, use_bearings: bool = True, bearing_range: int = 45, enable_stub_filter: bool = False, quality_thresholds: dict = None, simplify_tolerance: float = 15.0):
     logger = setup_logging(log_file)
     logger.info(f"Parsing shapes from {gtfs_path}...")
     
@@ -153,7 +153,8 @@ def process_gtfs_shapes(gtfs_path: str, osrm_url: str, output_path: str, profile
         max_points=max_points,
         snap_radius_meters=snap_radius,
         use_bearings=use_bearings,
-        bearing_range=bearing_range
+        bearing_range=bearing_range,
+        simplify_tolerance_meters=simplify_tolerance
     )
     cleaner = ShapeCleaner()
     
@@ -220,6 +221,7 @@ def main():
     parser.add_argument("--profile", default="bus", help="OSRM routing profile to use (default: bus)")
     parser.add_argument("--max-points", type=int, default=500, help="Maximum trace points per OSRM request before downsampling (default: 500)")
     parser.add_argument("--snap-radius", type=float, default=15.0, help="OSRM search radius in meters for snapping points (default: 15.0; tighten to ~8-10m near parallel corridors)")
+    parser.add_argument("--simplify-tolerance", type=float, default=15.0, help="RDP simplification tolerance in meters applied to the trace before matching to strip GPS jitter (default: 15.0)")
     parser.add_argument("--bearing-range", type=int, default=45, help="Allowed directional heading variance in degrees +/- (default: 45)")
     parser.add_argument("--no-bearings", action="store_true", help="Disable directional heading/bearing matching in OSRM")
     parser.add_argument("--enable-stub-filter", action="store_true", help="Enable pre-matching out-and-back stub filtering (diagnostic-only by default)")
@@ -260,7 +262,8 @@ def main():
         use_bearings=not args.no_bearings,
         bearing_range=args.bearing_range,
         enable_stub_filter=args.enable_stub_filter,
-        quality_thresholds=quality_thresholds
+        quality_thresholds=quality_thresholds,
+        simplify_tolerance=args.simplify_tolerance
     )
 
 if __name__ == "__main__":

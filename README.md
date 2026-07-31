@@ -78,6 +78,7 @@ usage: main.py [-h] [--osrm-url OSRM_URL] [--profile PROFILE]
 | `--profile` | `bus` | OSRM routing profile to use (`bus`, `driving`). |
 | `--max-points` | `500` | Maximum trace points per OSRM request before downsampling. |
 | `--snap-radius` | `15.0` | Search radius in meters for snapping GPS points to road segments. Tighten (e.g. `8.0-10.0`) near parallel corridors. |
+| `--simplify-tolerance` | `15.0` | RDP simplification tolerance in meters applied to the trace before matching. Strips GPS jitter (which otherwise collapses OSRM confidence to ~0); real turns deviate far more than this and are preserved. Set `0` to disable. |
 | `--bearing-range` | `45` | Allowed directional heading variance in degrees ($\pm 45^\circ$). |
 | `--no-bearings` | `False` | Disable compass heading/bearing matching in OSRM requests. |
 | `--enable-stub-filter` | `False` | Remove detected multi-point out-and-back stubs before matching (diagnostic-only by default). |
@@ -97,6 +98,9 @@ usage: main.py [-h] [--osrm-url OSRM_URL] [--profile PROFILE]
 ```bash
 # Process specific route with tight 10m snap radius
 python src/main.py gtfs.zip output.geojson --routes "79" --snap-radius 10.0
+
+# Tune jitter stripping (larger tolerance = smoother trace, fewer points)
+python src/main.py gtfs.zip output.geojson --simplify-tolerance 20.0
 
 # Flag matches whose mean confidence drops below 0.5 or that drift > 30m laterally
 python src/main.py gtfs.zip output.geojson --min-confidence 0.5 --max-lateral-deviation 30.0

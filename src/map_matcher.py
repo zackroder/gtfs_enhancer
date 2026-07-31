@@ -138,6 +138,7 @@ class OSRMMapMatcher:
         bridge_snap_radius_meters: Optional[float] = None,
         max_bridge_score: float = 250.0,
         window_context_points: int = 5,
+        simplify_tolerance_meters: float = 15.0,
     ):
         """
         Initializes the MapMatcher.
@@ -160,6 +161,11 @@ class OSRMMapMatcher:
                 scores mean the candidate does not convincingly connect its neighbors.
             window_context_points: Number of source points to include on each side of a
                 repair window so candidates overlap with known-good neighbors.
+            simplify_tolerance_meters: RDP simplification tolerance applied to the
+                trace before matching. GTFS bus shapes typically contain heavy GPS
+                jitter that collapses OSRM match confidence to ~0 and causes wrong-road
+                snaps; stripping deviations below this tolerance restores reliable
+                matching while preserving real turns (which deviate far more).
         """
         self.base_url = base_url.rstrip('/')
         self.profile = profile
@@ -173,6 +179,7 @@ class OSRMMapMatcher:
         self.bridge_snap_radius_meters = bridge_snap_radius_meters if bridge_snap_radius_meters is not None else min(snap_radius_meters, 15.0)
         self.max_bridge_score = max_bridge_score
         self.window_context_points = window_context_points
+        self.simplify_tolerance_meters = simplify_tolerance_meters
 
         # Scoring weights for continuity-constrained candidate selection
         self.detour_penalty = 400.0
@@ -180,19 +187,31 @@ class OSRMMapMatcher:
         self.node_continuity_bonus = 300.0
 
     def _preprocess(self, coords: list[tuple[float, float]]) -> list[tuple[float, float]]:
-        """Deduplicate consecutive points, then downsample/resample to OSRM point budget."""
+        """
+        Prepare a trace for OSRM matching:
+          1. Deduplicate consecutive coordinates.
+          2. RDP-simplify to simplify_tolerance_meters to strip GPS jitter. Raw GTFS
+             bus shapes are extremely noisy; without this step OSRM match confidence
+             collapses to ~0 and the matcher snaps to wrong roads.
+          3. Resample straightaways and enforce the OSRM point budget.
+        """
         coords = _dedupe_coords(coords)
 
-        if len(coords) > self.max_points:
+        # Strip GPS jitter unless explicitly disabled (simplify_tolerance_meters <= 0).
+        if self.simplify_tolerance_meters > 0.0:
+            tol_deg = self.simplify_tolerance_meters / 111000.0
             geom = LineString(coords)
-            tolerance = 0.00005  # ~5 meters in degrees
+            simplified = list(geom.simplify(tol_deg, preserve_topology=False).coords)
+            if len(simplified) >= 2:
+                coords = simplified
 
+        if len(coords) > self.max_points:
+            tolerance = self.simplify_tolerance_meters / 111000.0 if self.simplify_tolerance_meters > 0.0 else 0.00005
             while len(coords) > self.max_points:
-                simplified = geom.simplify(tolerance, preserve_topology=False)
-                raw_coords = list(simplified.coords)
-
+                geom = LineString(coords)
+                simplified = list(geom.simplify(tolerance, preserve_topology=False).coords)
                 # Resample straightaways so gaps do not exceed max_gap_meters (e.g. 300m)
-                coords = _resample_max_gap(raw_coords, max_gap_meters=self.max_gap_meters, max_points=self.max_points)
+                coords = _resample_max_gap(simplified, max_gap_meters=self.max_gap_meters, max_points=self.max_points)
 
                 tolerance *= 1.5
                 if tolerance > 0.01:
