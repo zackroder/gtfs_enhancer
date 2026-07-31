@@ -165,7 +165,7 @@ def process_gtfs_shapes(gtfs_path: str, osrm_url: str, output_path: str, profile
     logger.info(
         f"Starting map matching using {workers} parallel worker thread(s) "
         f"(Snap Radius: {snap_radius}m | Bearings: {use_bearings} ±{bearing_range}° | "
-        f"RDP: {pp.get('simplify_tolerance_meters', 15.0)}m | Stop excursion: return<={pp.get('spike_max_return_meters', 30.0)}m dev>={pp.get('spike_min_deviation_meters', 8.0)}m)"
+        f"RDP: {pp.get('simplify_tolerance_meters', 15.0)}m | Stop excursion: return<={pp.get('spike_max_return_meters', 50.0)}m dev>={pp.get('spike_min_deviation_meters', 8.0)}m)"
     )
     
     if workers > 1:
@@ -228,7 +228,7 @@ def main():
     parser.add_argument("--no-bearings", action="store_true", help="Disable directional heading/bearing matching in OSRM")
     parser.add_argument("--simplify-tolerance", type=float, default=15.0, help="RDP simplification tolerance in meters applied before matching to strip GPS jitter and short stop tails (default: 15.0)")
     parser.add_argument("--max-points", type=int, default=500, help="Maximum trace points sent to OSRM after resampling (default: 500)")
-    parser.add_argument("--spike-return", type=float, default=30.0, help="Max chord length in meters for a stop excursion to count as returning to the corridor (default: 30.0)")
+    parser.add_argument("--spike-return", type=float, default=50.0, help="Max chord length in meters for a stop excursion to count as returning to the corridor (default: 50.0)")
     parser.add_argument("--spike-deviation", type=float, default=8.0, help="Min deviation in meters for a stop-excursion vertex to be removed (default: 8.0)")
     parser.add_argument("--stop-radius", type=float, default=40.0, help="Max distance in meters from the excursion tip to a stop for removal (default: 40.0)")
     parser.add_argument("--min-confidence", type=float, default=0.75, help="Mean confidence below which a match is flagged suspect (default: 0.75)")

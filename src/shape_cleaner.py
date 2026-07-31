@@ -105,7 +105,7 @@ def remove_stop_excursions(
     coords: list[tuple[float, float]],
     stops: list[dict],
     stop_radius_meters: float = 40.0,
-    max_return_meters: float = 30.0,
+    max_return_meters: float = 50.0,
     min_deviation_meters: float = 8.0,
     max_corridor_turn_deg: float = 45.0,
 ) -> tuple[list[tuple[float, float]], list[dict]]:
@@ -185,7 +185,7 @@ class ShapeCleaner:
         stops: list[dict] = None,
         simplify_tolerance_meters: float = 15.0,
         stop_radius_meters: float = 40.0,
-        spike_max_return_meters: float = 30.0,
+        spike_max_return_meters: float = 50.0,
         spike_min_deviation_meters: float = 8.0,
         max_gap_meters: float = 300.0,
         max_points: int = 500,
