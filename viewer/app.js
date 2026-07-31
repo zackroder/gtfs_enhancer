@@ -24,11 +24,29 @@ const toggleOriginal = document.getElementById('toggle-original');
 const toggleCleaned = document.getElementById('toggle-cleaned');
 const togglePoints = document.getElementById('toggle-points');
 const statTotal = document.getElementById('stat-total-shapes');
+const statClean = document.getElementById('stat-clean');
+const statSuspect = document.getElementById('stat-suspect');
+const statReview = document.getElementById('stat-review');
 const routeSelector = document.getElementById('route-selector');
+const qualitySelector = document.getElementById('quality-selector');
 
 // Global State
 let currentFeatures = [];
 let currentRouteMapping = {};
+
+// Match status -> line color and review bucket
+const STATUS_COLORS = {
+    clean: '#2563eb',
+    suspect: '#f59e0b',
+    untrusted: '#dc2626',
+    failed: '#6b7280'
+};
+
+function bucketForStatus(status) {
+    if (status === 'clean') return 'clean';
+    if (status === 'suspect') return 'suspect';
+    return 'review';
+}
 
 // Handle File Upload
 fileInput.addEventListener('change', (e) => {
@@ -75,6 +93,9 @@ routeSelector.addEventListener('change', (e) => {
     }
 });
 
+// Match Quality Selector Handler
+qualitySelector.addEventListener('change', () => renderFeatures(null));
+
 function processGeoJSON(data) {
     if (!data.features || data.features.length === 0) {
         alert("No features found in the GeoJSON.");
@@ -104,7 +125,11 @@ function renderFeatures(allowedShapeIds) {
     cleanedLayer.clearLayers();
     pointsLayer.clearLayers();
 
+    const qualityFilter = qualitySelector.value;
     let originalCount = 0;
+    let cleanCount = 0;
+    let suspectCount = 0;
+    let reviewCount = 0;
     const bounds = L.latLngBounds();
 
     currentFeatures.forEach(feature => {
@@ -116,7 +141,13 @@ function renderFeatures(allowedShapeIds) {
         }
 
         const status = feature.properties?.status || 'cleaned';
-        
+        const matchStatus = feature.properties?.match_status || (status === 'cleaned' ? 'clean' : 'failed');
+
+        // Match quality filter
+        if (qualityFilter !== 'all' && matchStatus !== qualityFilter) {
+            return;
+        }
+
         let style = {};
         let targetLayer = null;
         let pointColor = '#2563eb';
@@ -133,12 +164,18 @@ function renderFeatures(allowedShapeIds) {
             originalCount++;
         } else {
             style = {
-                color: '#2563eb',
+                color: STATUS_COLORS[matchStatus] || STATUS_COLORS.clean,
                 weight: 6,
                 opacity: 0.5
             };
             targetLayer = cleanedLayer;
-            pointColor = '#2563eb';
+            pointColor = STATUS_COLORS[matchStatus] || STATUS_COLORS.clean;
+
+            // Bucket for stats
+            const bucket = bucketForStatus(matchStatus);
+            if (bucket === 'clean') cleanCount++;
+            else if (bucket === 'suspect') suspectCount++;
+            else reviewCount++;
         }
 
         const layer = L.geoJSON(feature, {
@@ -146,7 +183,29 @@ function renderFeatures(allowedShapeIds) {
             onEachFeature: (f, l) => {
                 const props = f.properties || {};
                 let popupContent = `<strong>Shape ID:</strong> ${props.shape_id || 'Unknown'}<br>`;
-                popupContent += `<strong>Status:</strong> ${props.status || 'Cleaned'}`;
+                popupContent += `<strong>Status:</strong> ${props.status || 'Cleaned'}<br>`;
+                if (props.match_status) {
+                    popupContent += `<strong>Match Quality:</strong> <span style="color:${STATUS_COLORS[props.match_status] || '#2563eb'}; font-weight:600;">${props.match_status}</span><br>`;
+                }
+                if (props.rejection_reason) {
+                    popupContent += `<strong>Reasons:</strong> ${props.rejection_reason}<br>`;
+                }
+                if (props.confidence) {
+                    const conf = Array.isArray(props.confidence) ? props.confidence.join(', ') : props.confidence;
+                    popupContent += `<strong>Confidence:</strong> ${conf}<br>`;
+                }
+                if (props.endpoint_error !== undefined && props.endpoint_error !== null) {
+                    popupContent += `<strong>Endpoint Error:</strong> ${props.endpoint_error}m<br>`;
+                }
+                if (props.length_ratio !== undefined && props.length_ratio !== null) {
+                    popupContent += `<strong>Length Ratio:</strong> ${props.length_ratio}<br>`;
+                }
+                if (props.max_lateral_deviation !== undefined && props.max_lateral_deviation !== null) {
+                    popupContent += `<strong>Max Lateral Deviation:</strong> ${props.max_lateral_deviation}m<br>`;
+                }
+                if (props.repair_count !== undefined && props.repair_count !== null) {
+                    popupContent += `<strong>Repairs Applied:</strong> ${props.repair_count}<br>`;
+                }
                 l.bindPopup(popupContent);
             }
         });
@@ -211,6 +270,9 @@ function renderFeatures(allowedShapeIds) {
 
     // Update Stats
     statTotal.textContent = originalCount > 0 ? originalCount : (currentFeatures.length / 2);
+    statClean.textContent = cleanCount;
+    statSuspect.textContent = suspectCount;
+    statReview.textContent = reviewCount;
 
     // Fit map to data
     if (bounds.isValid()) {

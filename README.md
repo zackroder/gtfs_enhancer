@@ -7,13 +7,15 @@ A high-performance Python pipeline and web visualizer that utilizes local OSRM (
 ## Features
 
 - **Bus-Only GTFS Filtering:** Filters GTFS feeds down to bus routes (`route_type == 3`) and outputs route-to-shape mapping.
-- **Pre-Matching Side-Stub Pruning:** Detects and removes off-corridor "stop-tail" side-stubs ($<110^\circ$ acute turn angles) before map matching.
+- **Out-and-Back Stub Detection:** Detects true multi-point spur tails (junction → tip → return) while leaving legitimate sharp turns, terminal loops, and GPS corners intact. Diagnostic-only by default; opt in with `--enable-stub-filter`.
 - **Directional Bearing/Heading Matching:** Calculates compass bearings ($0^\circ-360^\circ$) for trace points so OSRM never snaps lower/underpass traces onto elevated overpasses or diagonal interstates.
+- **Gap-Split Matching:** Requests `gaps=split` so OSRM matchings are never force-stitched; disconnected segments are repaired only via routed candidates, never artificial straight connectors.
+- **Continuity-Constrained Repair:** Re-matches low-confidence spans and source gaps over overlapping windows, preferring candidates that share OSM nodes with the surrounding accepted roads (the "same-road prior") to prevent parallel-street snaps.
+- **Match Quality Validation:** Flags each shape as `clean` / `suspect` / `untrusted` using confidence, endpoint error, lateral deviation, and length-ratio metrics; centerline geometry is still produced so raw GPS jitter is never reintroduced.
 - **Straightaway Resampling & Downsampling:** Uses RDP simplification for points exceeding OSRM budgets while guaranteeing maximum gap pinning (default `300m`) on long corridors.
-- **Continuous Multi-Matching Segment Stitching:** Stitches disjointed matchings into single continuous `LineString` geometries so long routes are never cut off.
 - **Multithreaded Parallel Processing:** ThreadPoolExecutor support for fast parallel matching across multi-core CPUs.
-- **Diagnostic Logging:** Logs OSRM confidence scores, matched distances, segment counts, and OSM node trajectory IDs to `execution_debug.log`.
-- **Interactive Web Viewer:** Hardware-accelerated (Canvas) Leaflet visualizer with route selection, original vs. cleaned toggles, and hoverable trace point metadata tooltips.
+- **Diagnostic Logging:** Logs OSRM confidence scores, matched distances, segment counts, repair counts, OSM node trajectory IDs, and match quality to `execution_debug.log`.
+- **Interactive Web Viewer:** Hardware-accelerated (Canvas) Leaflet visualizer with route selection, match-quality filtering, original vs. cleaned toggles, and hoverable trace point metadata tooltips.
 
 ---
 
@@ -75,10 +77,14 @@ usage: main.py [-h] [--osrm-url OSRM_URL] [--profile PROFILE]
 | `--osrm-url` | `http://localhost:5000` | Base URL of local OSRM instance. |
 | `--profile` | `bus` | OSRM routing profile to use (`bus`, `driving`). |
 | `--max-points` | `500` | Maximum trace points per OSRM request before downsampling. |
-| `--snap-radius` | `15.0` | Search radius in meters for snapping GPS points to road segments. Tighten (e.g. `10.0`) to avoid side-street traps. |
+| `--snap-radius` | `15.0` | Search radius in meters for snapping GPS points to road segments. Tighten (e.g. `8.0-10.0`) near parallel corridors. |
 | `--bearing-range` | `45` | Allowed directional heading variance in degrees ($\pm 45^\circ$). |
 | `--no-bearings` | `False` | Disable compass heading/bearing matching in OSRM requests. |
-| `--max-stub-meters` | `75.0` | Maximum distance in meters to classify pre-matching acute side-stubs for removal. |
+| `--enable-stub-filter` | `False` | Remove detected multi-point out-and-back stubs before matching (diagnostic-only by default). |
+| `--max-stub-meters` | `75.0` | Maximum excursion in meters to classify a pre-matching out-and-back stub. |
+| `--min-confidence` | `0.75` | Mean confidence below which a match is flagged `suspect`. |
+| `--max-endpoint-error` | `40.0` | Max mean start/end displacement in meters before a match is flagged. |
+| `--max-lateral-deviation` | `50.0` | Max perpendicular deviation in meters before a match is flagged. |
 | `--routes` | `None` | Comma-separated list of route IDs or short names to process (e.g. `--routes "79,J14"`). |
 | `--limit-shapes` | `None` | Limit processing to the first $N$ shapes (debug mode). |
 | `--workers` | `4` | Number of parallel worker threads for multi-core matching. |
@@ -91,6 +97,12 @@ usage: main.py [-h] [--osrm-url OSRM_URL] [--profile PROFILE]
 ```bash
 # Process specific route with tight 10m snap radius
 python src/main.py gtfs.zip output.geojson --routes "79" --snap-radius 10.0
+
+# Flag matches whose mean confidence drops below 0.5 or that drift > 30m laterally
+python src/main.py gtfs.zip output.geojson --min-confidence 0.5 --max-lateral-deviation 30.0
+
+# Enable pre-matching out-and-back stub removal
+python src/main.py gtfs.zip output.geojson --enable-stub-filter
 
 # Process first 5 shapes with 8 parallel worker threads
 python src/main.py gtfs.zip output.geojson --limit-shapes 5 --workers 8
@@ -106,6 +118,8 @@ pytest tests/
 Open `viewer/index.html` in your browser:
 1. Click **Select GeoJSON File** and select your generated `output_shapes.geojson`.
 2. Use the **Route Filter** dropdown to inspect specific bus routes.
-3. Toggle **Original Shapes**, **Cleaned (Map Matched)**, or **Trace Points**.
-4. Hover over individual point markers to inspect point sequence, lat/lon, status, and shape IDs.
+3. Use the **Match Quality Filter** to highlight `clean`, `suspect`, `untrusted`, or failed shapes. Cleaned lines are color-coded: blue = clean, amber = suspect, red = untrusted, grey = failed/fallback.
+4. Toggle **Original Shapes**, **Cleaned (Map Matched)**, or **Trace Points**.
+5. Click a cleaned shape to view its diagnostics: match quality, confidence, endpoint error, length ratio, max lateral deviation, and repair count.
+6. Hover over individual point markers to inspect point sequence, lat/lon, status, and shape IDs.
 

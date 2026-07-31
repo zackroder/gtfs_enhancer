@@ -46,6 +46,17 @@
             </div>
 
             <div class="control-group filter-group">
+                <h3>Match Quality Filter</h3>
+                <select id="quality-selector" class="route-select">
+                    <option value="all">All Qualities</option>
+                    <option value="clean">Clean</option>
+                    <option value="suspect">Suspect</option>
+                    <option value="untrusted">Untrusted</option>
+                    <option value="failed">Failed / Fallback</option>
+                </select>
+            </div>
+
+            <div class="control-group filter-group">
                 <h3>Layer Controls</h3>
                 
                 <label class="toggle-switch">
@@ -80,6 +91,18 @@
                 <div class="stat-box">
                     <span class="stat-value" id="stat-total-shapes">-</span>
                     <span class="stat-label">Total Shapes</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-value" id="stat-clean">-</span>
+                    <span class="stat-label">Clean</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-value" id="stat-suspect">-</span>
+                    <span class="stat-label">Suspect</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-value" id="stat-review">-</span>
+                    <span class="stat-label">Needs Review</span>
                 </div>
             </div>
             
