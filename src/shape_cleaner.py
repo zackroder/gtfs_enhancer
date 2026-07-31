@@ -197,6 +197,8 @@ def _find_corridor_detour(
         if j >= n - 1:
             break  # need a successor after the detour to confirm the corridor
         chord = _haversine_meters(coords[i], coords[j])
+        if chord < 1e-9:
+            continue  # degenerate span (e.g. out-and-back returns to the same point)
         if chord > max_span_meters:
             break
 

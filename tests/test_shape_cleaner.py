@@ -131,3 +131,19 @@ def test_remove_corridor_detour_requires_same_corridor():
     ]
     cleaned, removed = remove_corridor_detours(coords)
     assert removed == []
+
+
+def test_remove_corridor_detour_handles_degenerate_span():
+    # An out-and-back returning to the exact same coordinate produces a zero
+    # chord; the detector must not divide by zero.
+    coords = [
+        (0.0, -0.0001),
+        (0.0, 0.0),
+        (0.0003, 0.0),
+        (0.0, 0.0),      # returns exactly to A
+        (0.0, 0.0002),
+        (0.0, 0.0003),
+    ]
+    cleaned, removed = remove_corridor_detours(coords)
+    assert removed == []
+    assert list(cleaned) == coords
