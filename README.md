@@ -8,6 +8,7 @@ A high-performance Python pipeline and web visualizer that utilizes local OSRM (
 
 - **Bus-Only GTFS Filtering:** Filters GTFS feeds down to bus routes (`route_type == 3`) and outputs route-to-shape mapping.
 - **Out-and-Back Stub Detection:** Detects true multi-point spur tails (junction → tip → return) while leaving legitimate sharp turns, terminal loops, and GPS corners intact. Diagnostic-only by default; opt in with `--enable-stub-filter`.
+- **Stop-Aware Stop-Tail Removal:** Joins `stops.txt`/`stop_times.txt` onto each shape and removes short poke-out excursions whose sole purpose is reaching a stop. Single-point tails are handled; terminal endpoints, normal turns, loops, and branches serving multiple stops are preserved.
 - **Directional Bearing/Heading Matching:** Calculates compass bearings ($0^\circ-360^\circ$) for trace points so OSRM never snaps lower/underpass traces onto elevated overpasses or diagonal interstates.
 - **Gap-Split Matching:** Requests `gaps=split` so OSRM matchings are never force-stitched; disconnected segments are repaired only via routed candidates, never artificial straight connectors.
 - **Continuity-Constrained Repair:** Re-matches low-confidence spans and source gaps over overlapping windows, preferring candidates that share OSM nodes with the surrounding accepted roads (the "same-road prior") to prevent parallel-street snaps.
@@ -83,6 +84,10 @@ usage: main.py [-h] [--osrm-url OSRM_URL] [--profile PROFILE]
 | `--no-bearings` | `False` | Disable compass heading/bearing matching in OSRM requests. |
 | `--enable-stub-filter` | `False` | Remove detected multi-point out-and-back stubs before matching (diagnostic-only by default). |
 | `--max-stub-meters` | `75.0` | Maximum excursion in meters to classify a pre-matching out-and-back stub. |
+| `--no-stop-tails` | `False` | Disable stop-aware stop-tail removal (enabled by default). |
+| `--max-stop-tail-meters` | `125.0` | Maximum path length in meters of a stop tail eligible for removal. |
+| `--stop-radius` | `25.0` | Max distance from the poke-out tip to the stop for tail detection. |
+| `--return-corridor` | `20.0` | Max chord length for a tail to count as returning to the corridor. |
 | `--min-confidence` | `0.75` | Mean confidence below which a match is flagged `suspect`. |
 | `--max-endpoint-error` | `40.0` | Max mean start/end displacement in meters before a match is flagged. |
 | `--max-lateral-deviation` | `50.0` | Max perpendicular deviation in meters before a match is flagged. |
@@ -108,6 +113,9 @@ python src/main.py gtfs.zip output.geojson --min-confidence 0.5 --max-lateral-de
 # Enable pre-matching out-and-back stub removal
 python src/main.py gtfs.zip output.geojson --enable-stub-filter
 
+# Tune stop-tail removal (larger max = more aggressive removal)
+python src/main.py gtfs.zip output.geojson --max-stop-tail-meters 150.0 --return-corridor 25.0
+
 # Process first 5 shapes with 8 parallel worker threads
 python src/main.py gtfs.zip output.geojson --limit-shapes 5 --workers 8
 
@@ -124,6 +132,6 @@ Open `viewer/index.html` in your browser:
 2. Use the **Route Filter** dropdown to inspect specific bus routes.
 3. Use the **Match Quality Filter** to highlight `clean`, `suspect`, `untrusted`, or failed shapes. Cleaned lines are color-coded: blue = clean, amber = suspect, red = untrusted, grey = failed/fallback.
 4. Toggle **Original Shapes**, **Cleaned (Map Matched)**, or **Trace Points**.
-5. Click a cleaned shape to view its diagnostics: match quality, confidence, endpoint error, length ratio, max lateral deviation, and repair count.
+5. Click a cleaned shape to view its diagnostics: match quality, confidence, endpoint error, length ratio, max lateral deviation, repair count, and stop-tail removal info.
 6. Hover over individual point markers to inspect point sequence, lat/lon, status, and shape IDs.
 

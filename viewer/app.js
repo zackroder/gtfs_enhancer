@@ -206,6 +206,16 @@ function renderFeatures(allowedShapeIds) {
                 if (props.repair_count !== undefined && props.repair_count !== null) {
                     popupContent += `<strong>Repairs Applied:</strong> ${props.repair_count}<br>`;
                 }
+                if (props.stop_tail_count !== undefined && props.stop_tail_count !== null) {
+                    popupContent += `<strong>Stop Tails Removed:</strong> ${props.stop_tail_count}`;
+                    if (props.stop_tail_points_removed) {
+                        popupContent += ` (${props.stop_tail_points_removed} pts)`;
+                    }
+                    if (props.stop_tail_stop_ids && props.stop_tail_stop_ids.length) {
+                        popupContent += ` - ${props.stop_tail_stop_ids.join(', ')}`;
+                    }
+                    popupContent += `<br>`;
+                }
                 l.bindPopup(popupContent);
             }
         });
