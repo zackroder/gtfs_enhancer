@@ -17,7 +17,6 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r
 const originalLayer = L.layerGroup().addTo(map);
 const simplifiedLayer = L.layerGroup().addTo(map);
 const spikeLayer = L.layerGroup().addTo(map);
-const detourLayer = L.layerGroup().addTo(map);
 const cleanedLayer = L.layerGroup().addTo(map);
 const pointsLayer = L.layerGroup().addTo(map);
 
@@ -26,7 +25,6 @@ const fileInput = document.getElementById('geojson-upload');
 const toggleOriginal = document.getElementById('toggle-original');
 const toggleSimplified = document.getElementById('toggle-simplified');
 const toggleSpikeRemoved = document.getElementById('toggle-spike-removed');
-const toggleDetourRemoved = document.getElementById('toggle-detour-removed');
 const toggleCleaned = document.getElementById('toggle-cleaned');
 const togglePoints = document.getElementById('toggle-points');
 const statTotal = document.getElementById('stat-total-shapes');
@@ -88,11 +86,6 @@ toggleSpikeRemoved.addEventListener('change', (e) => {
     else map.removeLayer(spikeLayer);
 });
 
-toggleDetourRemoved.addEventListener('change', (e) => {
-    if (e.target.checked) map.addLayer(detourLayer);
-    else map.removeLayer(detourLayer);
-});
-
 toggleCleaned.addEventListener('change', (e) => {
     if (e.target.checked) map.addLayer(cleanedLayer);
     else map.removeLayer(cleanedLayer);
@@ -145,7 +138,6 @@ function renderFeatures(allowedShapeIds) {
     originalLayer.clearLayers();
     simplifiedLayer.clearLayers();
     spikeLayer.clearLayers();
-    detourLayer.clearLayers();
     cleanedLayer.clearLayers();
     pointsLayer.clearLayers();
 
@@ -185,14 +177,10 @@ function renderFeatures(allowedShapeIds) {
             style = { color: '#f59e0b', weight: 4, opacity: 0.7, dashArray: '3, 3' };
             targetLayer = simplifiedLayer;
             pointColor = '#f59e0b';
-        } else if (status === 'spike_removed') {
+        } else if (status === 'stop_removed') {
             style = { color: '#a855f7', weight: 4, opacity: 0.7 };
             targetLayer = spikeLayer;
             pointColor = '#a855f7';
-        } else if (status === 'detour_removed') {
-            style = { color: '#06b6d4', weight: 4, opacity: 0.7 };
-            targetLayer = detourLayer;
-            pointColor = '#06b6d4';
         } else {
             style = {
                 color: STATUS_COLORS[matchStatus] || STATUS_COLORS.clean,
@@ -237,14 +225,11 @@ function renderFeatures(allowedShapeIds) {
                 if (props.max_lateral_deviation !== undefined && props.max_lateral_deviation !== null) {
                     popupContent += `<strong>Max Lateral Deviation:</strong> ${props.max_lateral_deviation}m<br>`;
                 }
-                if (props.spikes_removed !== undefined && props.spikes_removed !== null) {
-                    popupContent += `<strong>Stop-Tail Spikes Removed:</strong> ${props.spikes_removed}<br>`;
-                }
-                if (props.detours_removed !== undefined && props.detours_removed !== null) {
-                    popupContent += `<strong>Short Detours Removed:</strong> ${props.detours_removed}<br>`;
+                if (props.stop_excursions_removed !== undefined && props.stop_excursions_removed !== null) {
+                    popupContent += `<strong>Stop Excursions Removed:</strong> ${props.stop_excursions_removed}<br>`;
                 }
                 if (props.simplified_points !== undefined && props.simplified_points !== null) {
-                    popupContent += `<strong>Point Reduction:</strong> ${props.original_points} → ${props.simplified_points} → ${props.spike_removed_points} → ${props.detour_removed_points} → ${props.matched_points}<br>`;
+                    popupContent += `<strong>Point Reduction:</strong> ${props.original_points} → ${props.simplified_points} → ${props.stop_removed_points} → ${props.matched_points}<br>`;
                 }
                 l.bindPopup(popupContent);
             }
