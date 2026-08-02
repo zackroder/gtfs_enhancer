@@ -126,13 +126,13 @@ pytest tests/
 
 Open `viewer/index.html` in your browser:
 1. Click **Select GeoJSON File** and select your generated `output_shapes.geojson`.
-2. Use the **Route Filter** dropdown to inspect specific bus routes.
-3. Use the **Match Quality Filter** to highlight `clean`, `suspect`, `untrusted`, or failed shapes. Cleaned lines are color-coded: blue = clean, amber = suspect, red = untrusted, grey = failed/fallback.
-4. Toggle the **intermediate-stage layers** to review each preprocessing step:
+2. Use the **Route Filter** dropdown to narrow the shape list to a route.
+3. Use the **Shape Filter** dropdown to inspect one exact `shape_id` and compare all stages without other variants overlaid.
+4. Use the **Match Quality Filter** to highlight `clean`, `suspect`, `untrusted`, or failed shapes. Cleaned lines are color-coded: blue = clean, amber = suspect, red = untrusted, grey = failed/fallback.
+5. Toggle the **intermediate-stage layers** to review each preprocessing step:
    - **Original Shapes** (red, dashed) — raw GTFS
    - **RDP Simplified** (orange, dashed) — after jitter/short-excursion stripping
    - **Stop Excursions Removed** (purple) — after stop-aware poke removal
    - **Cleaned (Map Matched)** — final OSRM centerline
-5. Click a cleaned shape to view its diagnostics: match quality, confidence, endpoint error, length ratio, max lateral deviation, point reduction per stage, and stop excursions removed.
-6. Hover over individual point markers to inspect point sequence, lat/lon, status, and shape IDs.
-
+6. Click a cleaned shape to view its diagnostics: match quality, confidence, endpoint error, length ratio, max lateral deviation, point reduction per stage, and stop excursions removed.
+7. Hover over individual point markers to inspect point sequence, lat/lon, status, and shape IDs.

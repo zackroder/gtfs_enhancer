@@ -32,6 +32,7 @@ const statClean = document.getElementById('stat-clean');
 const statSuspect = document.getElementById('stat-suspect');
 const statReview = document.getElementById('stat-review');
 const routeSelector = document.getElementById('route-selector');
+const shapeSelector = document.getElementById('shape-selector');
 const qualitySelector = document.getElementById('quality-selector');
 
 // Global State
@@ -98,17 +99,13 @@ togglePoints.addEventListener('change', (e) => {
 
 // Route Selector Handler
 routeSelector.addEventListener('change', (e) => {
-    const selectedRoute = e.target.value;
-    if (selectedRoute === 'all') {
-        renderFeatures(null);
-    } else {
-        const shapeIds = currentRouteMapping[selectedRoute] || [];
-        renderFeatures(shapeIds);
-    }
+    populateShapeSelector();
+    renderFeatures();
 });
 
 // Match Quality Selector Handler
-qualitySelector.addEventListener('change', () => renderFeatures(null));
+qualitySelector.addEventListener('change', () => renderFeatures());
+shapeSelector.addEventListener('change', () => renderFeatures());
 
 function processGeoJSON(data) {
     if (!data.features || data.features.length === 0) {
@@ -129,11 +126,41 @@ function processGeoJSON(data) {
         routeSelector.appendChild(option);
     });
 
+    populateShapeSelector();
+
     // Render all initially
-    renderFeatures(null);
+    renderFeatures();
 }
 
-function renderFeatures(allowedShapeIds) {
+function shapeIdsForSelectedRoute() {
+    const selectedRoute = routeSelector.value;
+    if (selectedRoute === 'all') {
+        return [...new Set(currentFeatures.map(f => String(f.properties?.shape_id)))];
+    }
+    return currentRouteMapping[selectedRoute] || [];
+}
+
+function populateShapeSelector() {
+    const routeShapeIds = new Set(shapeIdsForSelectedRoute());
+    const currentShape = shapeSelector.value;
+    const shapeIds = [...new Set(currentFeatures
+        .map(f => String(f.properties?.shape_id))
+        .filter(id => routeShapeIds.has(id)))].sort();
+
+    shapeSelector.innerHTML = '<option value="all">All Shapes</option>';
+    shapeIds.forEach(shapeId => {
+        const option = document.createElement('option');
+        option.value = shapeId;
+        option.textContent = shapeId;
+        shapeSelector.appendChild(option);
+    });
+
+    if (shapeIds.includes(currentShape)) {
+        shapeSelector.value = currentShape;
+    }
+}
+
+function renderFeatures() {
     // Clear existing layers
     originalLayer.clearLayers();
     simplifiedLayer.clearLayers();
@@ -142,6 +169,19 @@ function renderFeatures(allowedShapeIds) {
     pointsLayer.clearLayers();
 
     const qualityFilter = qualitySelector.value;
+    const routeShapeIds = new Set(shapeIdsForSelectedRoute());
+    const selectedShape = shapeSelector.value;
+
+    // Quality applies to a complete shape, so intermediate layers remain visible
+    // when a cleaned shape passes the quality filter.
+    const qualityShapeIds = new Set(currentFeatures
+        .filter(f => f.properties?.status === 'cleaned' || f.properties?.status === 'cleaned_fallback')
+        .filter(f => qualityFilter === 'all' || (f.properties?.match_status || 'failed') === qualityFilter)
+        .map(f => String(f.properties?.shape_id)));
+
+    const allowedShapeIds = new Set([...routeShapeIds]
+        .filter(id => selectedShape === 'all' || id === selectedShape)
+        .filter(id => qualityFilter === 'all' || qualityShapeIds.has(id)));
     let originalCount = 0;
     let cleanCount = 0;
     let suspectCount = 0;
@@ -151,18 +191,12 @@ function renderFeatures(allowedShapeIds) {
     currentFeatures.forEach(feature => {
         const shapeId = String(feature.properties?.shape_id);
         
-        // Skip if we have a filter and this shape isn't in it
-        if (allowedShapeIds && !allowedShapeIds.includes(shapeId)) {
+        if (!allowedShapeIds.has(shapeId)) {
             return;
         }
 
         const status = feature.properties?.status || 'cleaned';
         const matchStatus = feature.properties?.match_status || (status === 'cleaned' ? 'clean' : 'failed');
-
-        // Match quality filter only applies to cleaned/fallback features
-        if (qualityFilter !== 'all' && matchStatus !== qualityFilter) {
-            return;
-        }
 
         let style = {};
         let targetLayer = null;
@@ -238,7 +272,7 @@ function renderFeatures(allowedShapeIds) {
         layer.addTo(targetLayer);
         
         // Render Individual Interactive Trace Points ONLY when a single route is selected and toggle is checked
-        const shouldRenderPoints = allowedShapeIds !== null && togglePoints.checked;
+        const shouldRenderPoints = selectedShape !== 'all' && togglePoints.checked;
         if (shouldRenderPoints && feature.geometry && feature.geometry.coordinates) {
             const coordsList = feature.geometry.type === 'LineString' ? feature.geometry.coordinates : [];
             
@@ -294,7 +328,7 @@ function renderFeatures(allowedShapeIds) {
     });
 
     // Update Stats
-    statTotal.textContent = originalCount > 0 ? originalCount : (currentFeatures.length / 2);
+    statTotal.textContent = originalCount;
     statClean.textContent = cleanCount;
     statSuspect.textContent = suspectCount;
     statReview.textContent = reviewCount;
