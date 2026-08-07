@@ -11,6 +11,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import geopandas as gpd
 from shapely.geometry import LineString
+from src.bustime_parser import parse_bustime_patterns
 from src.gtfs_parser import parse_shapes, parse_stop_usage
 from src.map_matcher import OSRMMapMatcher
 from src.shape_cleaner import ShapeCleaner
@@ -122,27 +123,29 @@ def _process_single_shape(shape_id: str, df, matcher: OSRMMapMatcher, cleaner: S
         logger.error(f"Failure on shape_id={shape_id} on thread {thread_name}: {type(e).__name__}: {e}", exc_info=True)
         return shape_id, [], str(e)
 
-def process_gtfs_shapes(gtfs_path: str, osrm_url: str, output_path: str, profile: str, max_points: int = 500, routes: list[str] = None, limit_shapes: int = None, workers: int = 4, log_file: str = "execution_debug.log", snap_radius: float = 15.0, use_bearings: bool = True, bearing_range: int = 45, quality_thresholds: dict = None, preprocess_kwargs: dict = None):
+def process_gtfs_shapes(gtfs_path: str, osrm_url: str, output_path: str, profile: str, max_points: int = 500, routes: list[str] = None, limit_shapes: int = None, workers: int = 4, log_file: str = "execution_debug.log", snap_radius: float = 15.0, use_bearings: bool = True, bearing_range: int = 45, quality_thresholds: dict = None, preprocess_kwargs: dict = None, input_format: str = "gtfs"):
     logger = setup_logging(log_file)
-    logger.info(f"Parsing shapes from {gtfs_path}...")
+    logger.info(f"Parsing shapes from {gtfs_path} (format={input_format})...")
     
     try:
-        shapes, route_mapping = parse_shapes(gtfs_path, limit_routes=routes)
-    except Exception as e:
-        logger.critical(f"Error parsing GTFS: {e}", exc_info=True)
-        sys.exit(1)
-        
-    logger.info(f"Found {len(shapes)} unique shapes for bus routes.")
-    
-    stop_usage = {}
-    try:
-        stop_usage = parse_stop_usage(gtfs_path, limit_routes=routes)
-        if stop_usage:
-            logger.info(f"Parsed stop usage for {len(stop_usage)} shapes.")
+        if input_format == "bustime":
+            shapes, route_mapping, stop_usage = parse_bustime_patterns(gtfs_path)
+            logger.info(f"Found {len(shapes)} unique bustime patterns.")
         else:
-            logger.warning("No stop data found; stop-excursion removal disabled for this feed.")
+            shapes, route_mapping = parse_shapes(gtfs_path, limit_routes=routes)
+            logger.info(f"Found {len(shapes)} unique shapes for bus routes.")
+            stop_usage = {}
+            try:
+                stop_usage = parse_stop_usage(gtfs_path, limit_routes=routes)
+                if stop_usage:
+                    logger.info(f"Parsed stop usage for {len(stop_usage)} shapes.")
+                else:
+                    logger.warning("No stop data found; stop-excursion removal disabled for this feed.")
+            except Exception as e:
+                logger.warning(f"Failed to parse stop usage ({e}); stop-excursion removal disabled.")
     except Exception as e:
-        logger.warning(f"Failed to parse stop usage ({e}); stop-excursion removal disabled.")
+        logger.critical(f"Error parsing input: {e}", exc_info=True)
+        sys.exit(1)
 
     if limit_shapes and limit_shapes > 0:
         shape_keys = list(shapes.keys())[:limit_shapes]
@@ -219,8 +222,9 @@ def process_gtfs_shapes(gtfs_path: str, osrm_url: str, output_path: str, profile
 
 def main():
     parser = argparse.ArgumentParser(description="GTFS Enhancer: Clean route shapes using OSRM map matching.")
-    parser.add_argument("gtfs_path", help="Path to GTFS zip file, directory, or HTTP(S) URL")
+    parser.add_argument("gtfs_path", help="Path to GTFS zip file, directory, URL, or bustime patterns JSON")
     parser.add_argument("output_path", help="Path to save the output GeoJSON")
+    parser.add_argument("--input-format", type=str, default="gtfs", choices=["gtfs", "bustime"], help="Input format: gtfs (zip/dir/url) or bustime (getpatterns JSON)")
     parser.add_argument("--osrm-url", default="http://localhost:5000", help="Base URL of local OSRM instance (default: http://localhost:5000)")
     parser.add_argument("--profile", default="bus", help="OSRM routing profile to use (default: bus)")
     parser.add_argument("--snap-radius", type=float, default=15.0, help="OSRM search radius in meters for snapping points (default: 15.0; tighten to ~8-10m near parallel corridors)")
@@ -273,7 +277,8 @@ def main():
         use_bearings=not args.no_bearings,
         bearing_range=args.bearing_range,
         quality_thresholds=quality_thresholds,
-        preprocess_kwargs=preprocess_kwargs
+        preprocess_kwargs=preprocess_kwargs,
+        input_format=args.input_format
     )
 
 if __name__ == "__main__":
